@@ -27,16 +27,21 @@ def get_db():
 
 def load_data():
     db = get_db()
+    with open(DATA_FILE, 'r', encoding='utf-8') as f:
+        file_data = json.load(f)
     if db is not None:
         doc = db.gc_state.find_one({'_id': 'current'})
         if doc:
             doc.pop('_id')
+            new_keys = [k for k in file_data if k not in doc]
+            if new_keys:
+                for k in new_keys:
+                    doc[k] = file_data[k]
+                save_data(doc)
+                print(f'Migrated new keys to MongoDB: {new_keys}')
             return doc
-    with open(DATA_FILE, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-    if db is not None:
-        _seed_db(db, data)
-    return data
+        _seed_db(db, file_data)
+    return file_data
 
 
 def save_data(data):

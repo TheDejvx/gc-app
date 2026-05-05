@@ -676,6 +676,7 @@
               <th title="Klan golf (scramble)">Golf</th>
               <th title="Klan skytte">Skytte</th>
               <th title="Klan dart">Dart</th>
+              <th title="2v2 Scramble poäng">Scramble</th>
               <th>Totalt</th>
             </tr>
           </thead>
@@ -813,6 +814,37 @@ function deriveData(data) {
   const par = parseInt2(data.course.par) || 72;
   const sk = data.course.slope_table || 'eksjo_gk';
 
+  // Scramble points per klan from 2v2 matches
+  const scramblePtsMap = {};
+  data.klaner.forEach(k => { scramblePtsMap[k.id] = 0; });
+  if (data.scramble_enabled && data.scramble_matches) {
+    const getH = (klan, name) => {
+      if (!name) return null;
+      const p = klan.spelare.find(s => s.namn === name);
+      return p ? parseNum(p.hcp) : null;
+    };
+    data.scramble_matches.forEach(match => {
+      const kA = data.klaner.find(k => k.id === match.klanA);
+      const kB = data.klaner.find(k => k.id === match.klanB);
+      if (!kA || !kB) return;
+      const pA = match.playersA || [null, null];
+      const pB = match.playersB || [null, null];
+      const hA = [getH(kA, pA[0]), getH(kA, pA[1])];
+      const hB = [getH(kB, pB[0]), getH(kB, pB[1])];
+      const thA = (hA[0] !== null && hA[1] !== null) ? scrambleTeamHcp9(hA[0], hA[1]) : null;
+      const thB = (hB[0] !== null && hB[1] !== null) ? scrambleTeamHcp9(hB[0], hB[1]) : null;
+      let totA = 0, totB = 0, hasAny = false;
+      (match.rounds || []).forEach(r => {
+        const res = scrambleRoundResult(parseInt2(r.scoreA), parseInt2(r.scoreB), thA, thB);
+        if (res.ptsA !== null) { totA += res.ptsA; totB += res.ptsB; hasAny = true; }
+      });
+      if (hasAny) {
+        scramblePtsMap[match.klanA] = (scramblePtsMap[match.klanA] || 0) + totA;
+        scramblePtsMap[match.klanB] = (scramblePtsMap[match.klanB] || 0) + totB;
+      }
+    });
+  }
+
   return {
     ...data,
     course: { ...data.course, par },
@@ -848,13 +880,14 @@ function deriveData(data) {
 
       const ksky   = klanSkytte(klan.spelare);
       const kdart  = klanDart(klan.spelare);
+      const _scramblePts = scramblePtsMap[klan.id] || 0;
       const ktot   = (kgolf !== null && ksky !== null && kdart !== null)
-                     ? kgolf + ksky + kdart : null;
+                     ? kgolf + ksky + kdart + (data.scramble_enabled ? _scramblePts : 0) : null;
 
       return { ...klan, spelare: sp,
                _khRaw: khRaw, _kslope: kslope,
                _kgolfScramble: kgolfScramble, _indivGolfAvg: indivGolfAvg,
-               _kgolf: kgolf, _ksky: ksky, _kdart: kdart, _ktot: ktot };
+               _kgolf: kgolf, _ksky: ksky, _kdart: kdart, _scramblePts, _ktot: ktot };
     })
   };
 }
@@ -1015,8 +1048,9 @@ function renderResultsHtml(klaner) {
       </tr>`).join('');
 
   const sortedK = klaner.filter(k => k._ktot !== null).sort((a,b) => b._ktot - a._ktot);
+  const showSCol = sortedK.some(k => (k._scramblePts || 0) > 0);
   const klanRows = sortedK.length === 0
-    ? `<tr><td colspan="6" style="text-align:center;color:#bbb;padding:24px;font-size:13px">Inga data</td></tr>`
+    ? `<tr><td colspan="${showSCol ? 7 : 6}" style="text-align:center;color:#bbb;padding:24px;font-size:13px">Inga data</td></tr>`
     : sortedK.map((k, i) => `
       <tr>
         <td class="rank-num ${rankCls[i]||''}">${i+1}</td>
@@ -1024,6 +1058,7 @@ function renderResultsHtml(klaner) {
         <td class="pts-cell">${k._kgolf !== null ? fmtN(k._kgolf) : '–'}</td>
         <td class="pts-cell">${k._ksky !== null ? fmtN(k._ksky) : '–'}</td>
         <td class="pts-cell">${k._kdart !== null ? fmtN(k._kdart) : '–'}</td>
+        ${showSCol ? `<td class="pts-cell">${k._scramblePts > 0 ? fmtN(k._scramblePts, 1) : '–'}</td>` : ''}
         <td class="total-cell">${fmtN(k._ktot)}</td>
       </tr>`).join('');
 
@@ -1039,7 +1074,7 @@ function renderResultsHtml(klaner) {
       <div class="results-card">
         <h2>🏆 GC Klan Placering</h2>
         <table class="res-table">
-          <thead><tr><th>#</th><th class="left">Klan</th><th>Golf</th><th>Skytte</th><th>Dart</th><th>Totalt</th></tr></thead>
+          <thead><tr><th>#</th><th class="left">Klan</th><th>Golf</th><th>Skytte</th><th>Dart</th>${showSCol ? '<th title="2v2 Scramble">Scramble</th>' : ''}<th>Totalt</th></tr></thead>
           <tbody>${klanRows}</tbody>
         </table>
       </div>
@@ -1316,17 +1351,19 @@ function renderResults(d) {
   // ── Klan ──
   const klaner = d.klaner.filter(k => k._ktot !== null).sort((a,b) => b._ktot - a._ktot);
   const klanBody = document.getElementById('klan-body');
+  const showScrambleCol = !!d.scramble_enabled;
   klanBody.innerHTML = klaner.length === 0
-    ? `<tr><td colspan="6" style="text-align:center;color:#bbb;padding:24px;font-size:13px">Fyll i poäng ovan</td></tr>`
+    ? `<tr><td colspan="${showScrambleCol ? 7 : 6}" style="text-align:center;color:#bbb;padding:24px;font-size:13px">Fyll i poäng ovan</td></tr>`
     : klaner.map((k, i) => `
       <tr>
         <td class="rank-num ${rankCls[i]||''}">${i+1}</td>
         <td class="left name-cell" style="color:${k.color}">
           <span class="klan-dot" style="background:${k.color}"></span>${k.name}
         </td>
-        <td class="pts-cell">${k._kgolf ?? '–'}</td>
+        <td class="pts-cell">${k._kgolf !== null ? fmtN(k._kgolf) : '–'}</td>
         <td class="pts-cell">${k._ksky !== null ? fmtN(k._ksky) : '–'}</td>
         <td class="pts-cell">${k._kdart !== null ? fmtN(k._kdart) : '–'}</td>
+        ${showScrambleCol ? `<td class="pts-cell">${k._scramblePts > 0 ? fmtN(k._scramblePts, 1) : '–'}</td>` : ''}
         <td class="total-cell">${fmtN(k._ktot)}</td>
       </tr>`).join('');
 }

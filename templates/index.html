@@ -1514,7 +1514,7 @@ function onScramblePlayer(mi, side, slot, playerName) {
   if (!state.scramble_matches[mi][key]) state.scramble_matches[mi][key] = [null, null];
   state.scramble_matches[mi][key][slot] = playerName || null;
   markUnsaved();
-  renderScramble(derive());
+  render();
 }
 
 function onScrambleScore(mi, ri, side, el) {
@@ -1525,7 +1525,7 @@ function onScrambleScore(mi, ri, side, el) {
   state.scramble_matches[mi].rounds[ri][key] = val;
   el.classList.toggle('filled', val !== null && el.value.trim() !== '');
   markUnsaved();
-  renderScramble(derive());
+  render();
 }
 
 // ══════════════════════════════════════════════

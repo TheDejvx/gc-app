@@ -575,31 +575,34 @@
     .tab-input:focus { outline: none; border-color: #f9a825; box-shadow: 0 0 0 3px rgba(249,168,37,0.2); }
     .tab-input.filled { border-color: #a5d6a7; background: #f1f8e9; }
 
-    /* ── Vapen group cards (Skytte tab) ── */
-    .vapen-grid {
+    /* ── Runda cards (Skytte tab) ── */
+    .runda-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 14px;
       margin-bottom: 16px;
     }
-    @media (max-width: 900px) { .vapen-grid { grid-template-columns: 1fr; } }
-    .vapen-group-card {
+    @media (max-width: 900px) { .runda-grid { grid-template-columns: 1fr; } }
+    .runda-card {
       background: white;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
-    .vapen-group-header {
+    .runda-header {
       padding: 11px 16px;
+      background: #1a2e1a;
+      color: white;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-weight: 800;
     }
-    .vapen-group-header.v0 { background: #e3f2fd; color: #1565c0; }
-    .vapen-group-header.v1 { background: #fce4ec; color: #880e4f; }
-    .vapen-group-header.v2 { background: #e8f5e9; color: #1b5e20; }
-    .vapen-group-header.v3 { background: #fff3e0; color: #bf360c; }
+    .runda-label { font-size: 15px; font-weight: 800; }
+    .runda-total { font-size: 12px; font-weight: 600; opacity: 0.7; }
+    .runda-pos { font-size: 13px; font-weight: 900; text-align: center; width: 28px; }
+    .runda-pos-th { width: 28px; }
+
+    /* ── Vapen group (kept for Översikt skytte-ordning) ── */
     .vapen-name { font-size: 15px; font-weight: 800; }
     .vapen-total { font-size: 13px; font-weight: 700; opacity: 0.8; }
 
@@ -825,6 +828,8 @@ const SLOPE_TABLES = {
 // ══════════════════════════════════════════════
 const NASSJO_GK = { slope: 121, cr: 70.7, par: 72 };
 const SKYTTE_VAPEN = ['Davids Bock', 'Pump', 'SBS', 'Halv auto'];
+const SKYTTE_ROUND_MAX = 5;
+const SKYTTE_NUM_ROUNDS = 4;
 
 function nassjoSpelHcp(hcpIdx) {
   if (hcpIdx === null || hcpIdx === undefined) return null;
@@ -904,8 +909,17 @@ function klanHcpRaw(spelare) {
   return hs[0]*0.2 + hs[1]*0.15 + hs[2]*0.1 + hs[3]*0.05;
 }
 
+function playerSkytteTotal(p) {
+  if (p.skytte_rounds && Array.isArray(p.skytte_rounds)) {
+    const vals = p.skytte_rounds.map(v => parseNum(v)).filter(v => v !== null);
+    if (vals.length === 0) return null;
+    return vals.reduce((a, b) => a + b, 0);
+  }
+  return parseNum(p.skytte);
+}
+
 function klanSkytte(spelare) {
-  const vs = spelare.map(p => parseNum(p.skytte)).filter(v => v !== null);
+  const vs = spelare.map(playerSkytteTotal).filter(v => v !== null);
   if (vs.length < 4) return null;
   return vs.reduce((a,b) => a+b, 0) / 2;
 }
@@ -962,15 +976,16 @@ function deriveData(data) {
       const sp = klan.spelare.map(p => {
         const hcp   = parseNum(p.hcp);
         const slag  = parseInt2(p.slag);
-        const sky   = parseNum(p.skytte);
+        const sky   = playerSkytteTotal(p);
         const dart  = parseNum(p.dart);
         const shcp  = getSpelhandicap(hcp, sk);
         const golf  = golfPts(slag, shcp, par);
         const dpts  = dartPts(dart);
         const tot   = (golf !== null && sky !== null && dpts !== null)
                       ? golf + sky + dpts : null;
-        return { ...p, _hcp: hcp, _slag: slag, _sky: sky, _dart: dart,
-                 _shcp: shcp, _golf: golf, _dpts: dpts, _tot: tot };
+        const skyRounds = p.skytte_rounds || [null, null, null, null];
+        return { ...p, _hcp: hcp, _slag: slag, _sky: sky, _sky_rounds: skyRounds,
+                 _dart: dart, _shcp: shcp, _golf: golf, _dpts: dpts, _tot: tot };
       });
 
       const khRaw = klanHcpRaw(klan.spelare);
@@ -1554,6 +1569,7 @@ function renderGolfTab(d) {
               </div>
             </div>`).join('')}
         </div>
+        ${sportLeaderboardHtml(d, 'golf')}
       </main>`;
   });
 }
@@ -1562,104 +1578,109 @@ function renderSkytteTab(d) {
   const el = document.getElementById('sub-view-skytte');
   if (!el) return;
 
-  // Build sorted shooting order
+  // Build sorted shooting order — players with golf scores ranked, rest at bottom
   const allPlayers = [];
-  d.klaner.forEach(klan => klan.spelare.forEach(p => {
-    const ki = d.klaner.indexOf(klan);
-    const pi = klan.spelare.indexOf(p);
+  d.klaner.forEach((klan, ki) => klan.spelare.forEach((p, pi) => {
     allPlayers.push({ ...p, klanColor: klan.color, ki, pi });
   }));
   const withGolf    = allPlayers.filter(p => p._golf !== null).sort((a,b) => b._golf - a._golf);
   const withoutGolf = allPlayers.filter(p => p._golf === null);
+  withGolf.forEach((p, i) => { p._shootPos = i; });
 
-  // Assign each player their weapon index based on shooting position
-  withGolf.forEach((p, i) => { p._shootPos = i; p._vapenIdx = i % SKYTTE_VAPEN.length; });
-  withoutGolf.forEach(p => { p._shootPos = null; p._vapenIdx = null; });
-
-  // Group scored players by weapon
-  const vapenGroups = SKYTTE_VAPEN.map((vapen, vi) => ({
-    vapen,
-    vi,
-    players: withGolf.filter(p => p._vapenIdx === vi)
-  }));
-
-  const rankCls = ['gold','silver','bronze'];
-
-  const groupCards = vapenGroups.map(g => {
-    const total = g.players.reduce((sum, p) => p.skytte !== null ? sum + parseNum(p.skytte) : sum, 0);
-    const hasAny = g.players.some(p => p.skytte !== null);
-    const rows = g.players.map(p => {
-      const pos = p._shootPos;
-      const posCls = rankCls[pos] || '';
+  // Build 4 round cards — weapon rotates each round
+  const roundCards = Array.from({ length: SKYTTE_NUM_ROUNDS }, (_, ri) => {
+    const rows = withGolf.map(p => {
+      const vapenIdx = (p._shootPos + ri) % SKYTTE_VAPEN.length;
+      const rounds   = state.klaner[p.ki].spelare[p.pi].skytte_rounds || [null,null,null,null];
+      const val      = rounds[ri] !== null && rounds[ri] !== undefined ? rounds[ri] : '';
+      const filled   = val !== '';
+      const posColor = p._shootPos === 0 ? '#f9a825' : p._shootPos === 1 ? '#90a4ae' : p._shootPos === 2 ? '#a1887f' : '#bbb';
       return `<tr>
-        <td style="text-align:center;font-weight:900;color:${posCls === 'gold' ? '#f9a825' : posCls === 'silver' ? '#90a4ae' : posCls === 'bronze' ? '#a1887f' : '#bbb'};font-size:13px">${pos + 1}</td>
+        <td class="runda-pos" style="color:${posColor}">${p._shootPos + 1}</td>
         <td class="stt-name">
           <span class="klan-dot" style="background:${p.klanColor}"></span>${p.namn}
         </td>
-        <td style="text-align:center;font-size:12px;color:#888;font-weight:700">${p._golf !== null ? p._golf + ' pts' : '–'}</td>
-        <td><input class="tab-input${state.klaner[p.ki].spelare[p.pi].skytte !== null ? ' filled' : ''}"
+        <td><span class="skytte-vapen v${vapenIdx}">${SKYTTE_VAPEN[vapenIdx]}</span></td>
+        <td><input class="tab-input${filled ? ' filled' : ''}"
           type="text" inputmode="numeric"
-          id="st-sky-${p.ki}-${p.pi}"
-          value="${state.klaner[p.ki].spelare[p.pi].skytte ?? ''}"
-          placeholder="0–20"
-          oninput="onInput(${p.ki},${p.pi},'skytte',this)"></td>
-        <td class="stt-calc green">${p._sky !== null ? p._sky : '–'}</td>
+          id="sr-${p.ki}-${p.pi}-${ri}"
+          value="${val}"
+          placeholder="0–${SKYTTE_ROUND_MAX}"
+          oninput="onSkytteRound(${p.ki},${p.pi},${ri},this)"></td>
+        <td class="stt-calc green">${val !== '' ? val : '–'}</td>
       </tr>`;
     }).join('');
 
+    const roundTotal = withGolf.reduce((sum, p) => {
+      const v = (state.klaner[p.ki].spelare[p.pi].skytte_rounds || [])[ri];
+      return v !== null && v !== undefined ? sum + parseInt2(String(v)) : sum;
+    }, 0);
+    const hasAny = withGolf.some(p => {
+      const v = (state.klaner[p.ki].spelare[p.pi].skytte_rounds || [])[ri];
+      return v !== null && v !== undefined;
+    });
+
     return `
-      <div class="vapen-group-card">
-        <div class="vapen-group-header v${g.vi}">
-          <span class="vapen-name">${g.vapen}</span>
-          <span class="vapen-total">${hasAny ? total + ' duvor' : '–'}</span>
+      <div class="runda-card">
+        <div class="runda-header">
+          <span class="runda-label">Runda ${ri + 1}</span>
+          <span class="runda-total">${hasAny ? roundTotal + ' duvor totalt' : ''}</span>
         </div>
         <table class="sport-tab-table">
           <thead><tr>
-            <th style="width:36px">#</th>
+            <th class="runda-pos-th">#</th>
             <th class="left">Spelare</th>
-            <th>Golf pts</th>
-            <th>Duvor (0–20)</th>
-            <th class="green">Skytte pts</th>
+            <th>Vapen</th>
+            <th>Duvor (max ${SKYTTE_ROUND_MAX})</th>
+            <th class="green">Slag</th>
           </tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>`;
   }).join('');
 
-  // Players without golf score — show them separately
-  const noScoreRows = withoutGolf.length === 0 ? '' : `
-    <div class="vapen-group-card" style="margin-top:8px">
-      <div class="vapen-group-header" style="background:#f0f0f0;color:#888">
-        <span class="vapen-name">Utan golf-poäng</span>
-        <span class="vapen-total">Vapen ej tilldelat</span>
+  // Players without golf score (no weapon assigned)
+  const noGolfSection = withoutGolf.length === 0 ? '' : `
+    <div class="runda-card" style="opacity:0.7">
+      <div class="runda-header" style="background:#eee;color:#888">
+        <span class="runda-label">Utan golf-poäng</span>
+        <span class="runda-total">Vapen ej tilldelat ännu</span>
       </div>
       <table class="sport-tab-table">
-        <thead><tr>
-          <th class="left">Spelare</th>
-          <th>Duvor (0–20)</th>
-          <th class="green">Skytte pts</th>
-        </tr></thead>
-        <tbody>
-          ${withoutGolf.map(p => `
-            <tr>
-              <td class="stt-name"><span class="klan-dot" style="background:${p.klanColor}"></span>${p.namn}</td>
-              <td><input class="tab-input${state.klaner[p.ki].spelare[p.pi].skytte !== null ? ' filled' : ''}"
-                type="text" inputmode="numeric"
-                id="st-sky-${p.ki}-${p.pi}"
-                value="${state.klaner[p.ki].spelare[p.pi].skytte ?? ''}"
-                placeholder="0–20"
-                oninput="onInput(${p.ki},${p.pi},'skytte',this)"></td>
-              <td class="stt-calc green">${p._sky !== null ? p._sky : '–'}</td>
-            </tr>`).join('')}
-        </tbody>
+        <thead><tr><th class="left">Spelare</th></tr></thead>
+        <tbody>${withoutGolf.map(p =>
+          `<tr><td class="stt-name"><span class="klan-dot" style="background:${p.klanColor}"></span>${p.namn}</td></tr>`
+        ).join('')}</tbody>
       </table>
     </div>`;
+
+  // Mini leaderboard
+  const ranked = [...withGolf, ...withoutGolf]
+    .filter(p => p._sky !== null)
+    .sort((a,b) => b._sky - a._sky);
+  const rankCls = ['gold','silver','bronze'];
+  const lbRows = ranked.length === 0
+    ? `<tr><td colspan="3" style="text-align:center;color:#bbb;padding:16px;font-size:13px">Inga skytte-resultat ännu</td></tr>`
+    : ranked.map((p,i) => `<tr>
+        <td class="rank-num ${rankCls[i]||''}">${i+1}</td>
+        <td class="left name-cell"><span class="klan-dot" style="background:${p.klanColor}"></span>${p.namn}</td>
+        <td class="total-cell">${p._sky} pts</td>
+      </tr>`).join('');
 
   withFocus(() => {
     el.innerHTML = `
       <main>
-        <div class="vapen-grid">${groupCards}</div>
-        ${noScoreRows}
+        <div class="runda-grid">${roundCards}</div>
+        ${noGolfSection}
+        <div class="results-grid" style="margin-top:16px">
+          <div class="results-card">
+            <h2>🎯 Skytte Placering</h2>
+            <table class="res-table">
+              <thead><tr><th>#</th><th class="left">Namn</th><th>Skytte pts</th></tr></thead>
+              <tbody>${lbRows}</tbody>
+            </table>
+          </div>
+        </div>
       </main>`;
   });
 }
@@ -1702,8 +1723,45 @@ function renderDartTab(d) {
               </div>
             </div>`).join('')}
         </div>
+        ${sportLeaderboardHtml(d, 'dart')}
       </main>`;
   });
+}
+
+function sportLeaderboardHtml(d, sport) {
+  const allP = d.klaner.flatMap(klan =>
+    klan.spelare.map(p => ({ ...p, klanColor: klan.color }))
+  );
+  let sorted, label, valFn;
+  if (sport === 'golf') {
+    sorted = allP.filter(p => p._golf !== null).sort((a,b) => b._golf - a._golf);
+    label = '🏌️ Golf Placering';
+    valFn = p => p._golf + ' pts';
+  } else if (sport === 'dart') {
+    sorted = allP.filter(p => p._dpts !== null).sort((a,b) => b._dpts - a._dpts);
+    label = '🎯 Dart Placering';
+    valFn = p => fmtN(p._dpts) + ' pts';
+  } else {
+    return '';
+  }
+  const rankCls = ['gold','silver','bronze'];
+  const rows = sorted.length === 0
+    ? `<tr><td colspan="3" style="text-align:center;color:#bbb;padding:16px;font-size:13px">Inga resultat ännu</td></tr>`
+    : sorted.map((p,i) => `<tr>
+        <td class="rank-num ${rankCls[i]||''}">${i+1}</td>
+        <td class="left name-cell"><span class="klan-dot" style="background:${p.klanColor}"></span>${p.namn}</td>
+        <td class="total-cell">${valFn(p)}</td>
+      </tr>`).join('');
+  return `
+    <div class="results-grid" style="margin-top:16px">
+      <div class="results-card">
+        <h2>${label}</h2>
+        <table class="res-table">
+          <thead><tr><th>#</th><th class="left">Namn</th><th>Poäng</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
 }
 
 function renderResults(d) {
@@ -1938,6 +1996,17 @@ function onInput(ki, pi, field, el) {
   render();
 }
 
+function onSkytteRound(ki, pi, ri, el) {
+  const raw = el.value.trim();
+  const parsed = parseInt2(raw);
+  if (!state.klaner[ki].spelare[pi].skytte_rounds)
+    state.klaner[ki].spelare[pi].skytte_rounds = [null, null, null, null];
+  state.klaner[ki].spelare[pi].skytte_rounds[ri] = parsed;
+  el.classList.toggle('filled', parsed !== null && raw !== '');
+  markUnsaved();
+  render();
+}
+
 function onKlanSlag(ki, el) {
   const raw = el.value.trim();
   const parsed = parseInt2(raw);
@@ -1958,6 +2027,13 @@ function markUnsaved() {
 async function loadData() {
   const resp = await fetch('/api/data');
   state = await resp.json();
+
+  // Init skytte_rounds if missing (backwards compat)
+  if (state.klaner) {
+    state.klaner.forEach(klan => klan.spelare.forEach(p => {
+      if (!p.skytte_rounds) p.skytte_rounds = [null, null, null, null];
+    }));
+  }
 
   document.getElementById('course-name-input').value = state.course.name || '';
   document.getElementById('course-par-input').value  = state.course.par  || 72;

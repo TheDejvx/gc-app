@@ -575,6 +575,34 @@
     .tab-input:focus { outline: none; border-color: #f9a825; box-shadow: 0 0 0 3px rgba(249,168,37,0.2); }
     .tab-input.filled { border-color: #a5d6a7; background: #f1f8e9; }
 
+    /* ── Vapen group cards (Skytte tab) ── */
+    .vapen-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 900px) { .vapen-grid { grid-template-columns: 1fr; } }
+    .vapen-group-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    .vapen-group-header {
+      padding: 11px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 800;
+    }
+    .vapen-group-header.v0 { background: #e3f2fd; color: #1565c0; }
+    .vapen-group-header.v1 { background: #fce4ec; color: #880e4f; }
+    .vapen-group-header.v2 { background: #e8f5e9; color: #1b5e20; }
+    .vapen-group-header.v3 { background: #fff3e0; color: #bf360c; }
+    .vapen-name { font-size: 15px; font-weight: 800; }
+    .vapen-total { font-size: 13px; font-weight: 700; opacity: 0.8; }
+
     /* ── GC1 Scramble Section ── */
     .scramble-section { margin-bottom: 16px; }
     .scramble-section-title {
@@ -710,9 +738,7 @@
     </div>
 
     <main>
-      <div id="startlista-section"></div>
       <div class="klaner-grid" id="klaner-grid"><!-- rendered by JS --></div>
-      <div id="skytte-ordning-section"></div>
       <div id="scramble-section"></div>
 
       <div class="results-grid">
@@ -1071,12 +1097,10 @@ function computeStartlista(hist) {
   return pairs;
 }
 
-function renderStartlista() {
-  const el = document.getElementById('startlista-section');
-  if (!el) return;
+function startlistaHtml() {
   const prevHist = (state.history || []).reduce((best, h) =>
     (!best || h.year > best.year) ? h : best, null);
-  if (!prevHist) { el.innerHTML = ''; return; }
+  if (!prevHist) return '';
 
   const pairs = computeStartlista(prevHist);
   const rankCls = ['gold','silver','bronze'];
@@ -1092,7 +1116,7 @@ function renderStartlista() {
     return `<div class="start-pair"><div class="car-label">Bil ${i+1}</div>${playerHtml}</div>`;
   }).join('');
 
-  el.innerHTML = `
+  return `
     <div class="startlista-card">
       <div class="startlista-header">
         <h2>🚗 Startlista ${state.year || ''}</h2>
@@ -1100,6 +1124,11 @@ function renderStartlista() {
       </div>
       <div class="startlista-pairs">${pairsHtml}</div>
     </div>`;
+}
+
+function renderStartlista() {
+  const el = document.getElementById('startlista-section');
+  if (el) el.innerHTML = startlistaHtml();
 }
 
 function renderSkyteOrdning(d) {
@@ -1272,7 +1301,6 @@ function render() {
     renderKlaner(d);
     renderScramble(d, 'scramble-section');
     renderResults(d);
-    renderSkyteOrdning(d);
   } else if (activeSubTab === 'golf') {
     renderGolfTab(d);
   } else if (activeSubTab === 'skytte') {
@@ -1483,6 +1511,7 @@ function renderGolfTab(d) {
         </div>
       </div>
       <main>
+        ${startlistaHtml()}
         <div class="klaner-grid">
           ${d.klaner.map((klan, ki) => `
             <div class="klan-card">
@@ -1533,70 +1562,104 @@ function renderSkytteTab(d) {
   const el = document.getElementById('sub-view-skytte');
   if (!el) return;
 
-  const all = [];
-  d.klaner.forEach(klan => klan.spelare.forEach(p => all.push({...p, klanColor: klan.color})));
-  const withGolf = all.filter(p => p._golf !== null).sort((a,b) => b._golf - a._golf);
-  const withoutGolf = all.filter(p => p._golf === null);
-  const ordered = [...withGolf, ...withoutGolf];
+  // Build sorted shooting order
+  const allPlayers = [];
+  d.klaner.forEach(klan => klan.spelare.forEach(p => {
+    const ki = d.klaner.indexOf(klan);
+    const pi = klan.spelare.indexOf(p);
+    allPlayers.push({ ...p, klanColor: klan.color, ki, pi });
+  }));
+  const withGolf    = allPlayers.filter(p => p._golf !== null).sort((a,b) => b._golf - a._golf);
+  const withoutGolf = allPlayers.filter(p => p._golf === null);
+
+  // Assign each player their weapon index based on shooting position
+  withGolf.forEach((p, i) => { p._shootPos = i; p._vapenIdx = i % SKYTTE_VAPEN.length; });
+  withoutGolf.forEach(p => { p._shootPos = null; p._vapenIdx = null; });
+
+  // Group scored players by weapon
+  const vapenGroups = SKYTTE_VAPEN.map((vapen, vi) => ({
+    vapen,
+    vi,
+    players: withGolf.filter(p => p._vapenIdx === vi)
+  }));
+
   const rankCls = ['gold','silver','bronze'];
 
-  const ordningRows = ordered.map((p, i) => {
-    const hasScore = p._golf !== null;
-    const posCls = hasScore ? (rankCls[i] || '') : '';
-    const vapenIdx = hasScore ? i % SKYTTE_VAPEN.length : -1;
-    const vapenHtml = vapenIdx >= 0
-      ? `<span class="skytte-vapen v${vapenIdx}">${SKYTTE_VAPEN[vapenIdx]}</span>` : '';
-    return `<div class="skytte-player${hasScore ? '' : ' no-score'}">
-      <span class="skytte-pos ${posCls}">${i + 1}</span>
-      <span class="klan-dot" style="background:${p.klanColor}"></span>
-      <span class="skytte-name">${p.namn}</span>
-      ${vapenHtml}
-      <span class="skytte-golf">${hasScore ? p._golf + ' pts' : '–'}</span>
-    </div>`;
+  const groupCards = vapenGroups.map(g => {
+    const total = g.players.reduce((sum, p) => p.skytte !== null ? sum + parseNum(p.skytte) : sum, 0);
+    const hasAny = g.players.some(p => p.skytte !== null);
+    const rows = g.players.map(p => {
+      const pos = p._shootPos;
+      const posCls = rankCls[pos] || '';
+      return `<tr>
+        <td style="text-align:center;font-weight:900;color:${posCls === 'gold' ? '#f9a825' : posCls === 'silver' ? '#90a4ae' : posCls === 'bronze' ? '#a1887f' : '#bbb'};font-size:13px">${pos + 1}</td>
+        <td class="stt-name">
+          <span class="klan-dot" style="background:${p.klanColor}"></span>${p.namn}
+        </td>
+        <td style="text-align:center;font-size:12px;color:#888;font-weight:700">${p._golf !== null ? p._golf + ' pts' : '–'}</td>
+        <td><input class="tab-input${state.klaner[p.ki].spelare[p.pi].skytte !== null ? ' filled' : ''}"
+          type="text" inputmode="numeric"
+          id="st-sky-${p.ki}-${p.pi}"
+          value="${state.klaner[p.ki].spelare[p.pi].skytte ?? ''}"
+          placeholder="0–20"
+          oninput="onInput(${p.ki},${p.pi},'skytte',this)"></td>
+        <td class="stt-calc green">${p._sky !== null ? p._sky : '–'}</td>
+      </tr>`;
+    }).join('');
+
+    return `
+      <div class="vapen-group-card">
+        <div class="vapen-group-header v${g.vi}">
+          <span class="vapen-name">${g.vapen}</span>
+          <span class="vapen-total">${hasAny ? total + ' duvor' : '–'}</span>
+        </div>
+        <table class="sport-tab-table">
+          <thead><tr>
+            <th style="width:36px">#</th>
+            <th class="left">Spelare</th>
+            <th>Golf pts</th>
+            <th>Duvor (0–20)</th>
+            <th class="green">Skytte pts</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
   }).join('');
+
+  // Players without golf score — show them separately
+  const noScoreRows = withoutGolf.length === 0 ? '' : `
+    <div class="vapen-group-card" style="margin-top:8px">
+      <div class="vapen-group-header" style="background:#f0f0f0;color:#888">
+        <span class="vapen-name">Utan golf-poäng</span>
+        <span class="vapen-total">Vapen ej tilldelat</span>
+      </div>
+      <table class="sport-tab-table">
+        <thead><tr>
+          <th class="left">Spelare</th>
+          <th>Duvor (0–20)</th>
+          <th class="green">Skytte pts</th>
+        </tr></thead>
+        <tbody>
+          ${withoutGolf.map(p => `
+            <tr>
+              <td class="stt-name"><span class="klan-dot" style="background:${p.klanColor}"></span>${p.namn}</td>
+              <td><input class="tab-input${state.klaner[p.ki].spelare[p.pi].skytte !== null ? ' filled' : ''}"
+                type="text" inputmode="numeric"
+                id="st-sky-${p.ki}-${p.pi}"
+                value="${state.klaner[p.ki].spelare[p.pi].skytte ?? ''}"
+                placeholder="0–20"
+                oninput="onInput(${p.ki},${p.pi},'skytte',this)"></td>
+              <td class="stt-calc green">${p._sky !== null ? p._sky : '–'}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
 
   withFocus(() => {
     el.innerHTML = `
       <main>
-        <div class="skytte-card">
-          <div class="skytte-header">
-            <h2>🎯 Skytte Startordning</h2>
-            <span class="skytte-sub">Flest golf poäng skjuter först</span>
-          </div>
-          <div class="skytte-list">${ordningRows}</div>
-        </div>
-        <div class="klaner-grid">
-          ${d.klaner.map((klan, ki) => `
-            <div class="klan-card">
-              <div class="klan-header" style="background:${klan.color}">
-                <h2>${klan.name}</h2>
-                <div class="klan-badge-total">
-                  <div class="tot-num">${klan._ksky !== null ? fmtN(klan._ksky) : '–'}</div>
-                  <div class="tot-label">skytte total</div>
-                </div>
-              </div>
-              <div style="padding:14px 16px">
-                <table class="sport-tab-table">
-                  <thead><tr>
-                    <th class="left">Spelare</th>
-                    <th>Duvor (0–20)</th>
-                    <th class="green">Skytte pts</th>
-                  </tr></thead>
-                  <tbody>
-                    ${klan.spelare.map((p, pi) => `
-                      <tr>
-                        <td class="stt-name">${p.namn}</td>
-                        <td><input class="tab-input${state.klaner[ki].spelare[pi].skytte !== null ? ' filled' : ''}" type="text" inputmode="numeric"
-                          id="st-sky-${ki}-${pi}"
-                          value="${state.klaner[ki].spelare[pi].skytte ?? ''}"
-                          placeholder="0–20" oninput="onInput(${ki},${pi},'skytte',this)"></td>
-                        <td class="stt-calc green">${p._sky !== null ? p._sky : '–'}</td>
-                      </tr>`).join('')}
-                  </tbody>
-                </table>
-              </div>
-            </div>`).join('')}
-        </div>
+        <div class="vapen-grid">${groupCards}</div>
+        ${noScoreRows}
       </main>`;
   });
 }
@@ -1901,7 +1964,6 @@ async function loadData() {
   buildTabs();
   buildSubTabs();
   updateSubtitle();
-  renderStartlista();
 
   // Populate input values from state
   render();

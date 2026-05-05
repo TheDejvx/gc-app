@@ -510,6 +510,88 @@
     .skytte-player.no-score .skytte-name { color: #bbb; font-weight: 600; }
     .skytte-player.no-score .skytte-pos { color: #e8e8e8; }
 
+    /* ── GC1 Scramble Section ── */
+    .scramble-section { margin-bottom: 16px; }
+    .scramble-section-title {
+      font-size: 13px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.5px; color: #555; padding: 0 2px 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .scramble-matchup-card {
+      background: white; border-radius: 12px; overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 14px;
+    }
+    .scramble-matchup-header {
+      padding: 12px 16px; background: #1a2e1a; color: white;
+      font-weight: 800; font-size: 15px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .scramble-matchup-header .vs-sep { font-size: 12px; font-weight: 400; opacity: 0.5; margin: 0 3px; }
+    .scramble-teams-row {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: #eee;
+    }
+    @media (max-width: 600px) { .scramble-teams-row { grid-template-columns: 1fr; } }
+    .scramble-team { background: white; padding: 14px; }
+    .scramble-team-heading {
+      font-size: 12px; font-weight: 800; text-transform: uppercase;
+      color: #666; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .scramble-player-slot { margin-bottom: 8px; }
+    .scramble-player-slot label {
+      display: block; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; color: #aaa; margin-bottom: 3px;
+    }
+    .scramble-select {
+      width: 100%; padding: 8px 10px; font-size: 14px;
+      border: 1.5px solid #ddd; border-radius: 8px;
+      background: white; cursor: pointer; font-family: inherit;
+      transition: border-color 0.15s;
+    }
+    .scramble-select:focus { outline: none; border-color: #f9a825; box-shadow: 0 0 0 3px rgba(249,168,37,0.2); }
+    .scramble-select.filled { border-color: #66bb6a; background: #f9fef9; }
+    .scramble-shcp-hint { font-size: 11px; color: #bbb; margin-top: 2px; padding-left: 4px; }
+    .team-hcp-row {
+      margin-top: 10px; background: #f5f7f5; border-radius: 8px;
+      padding: 8px 12px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .team-hcp-row .hcp-lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #888; }
+    .team-hcp-row .hcp-val { font-size: 18px; font-weight: 900; color: #1a1a2e; }
+    .scramble-rounds-section { border-top: 2px solid #f0f0f0; padding: 12px 16px; }
+    .scramble-round-row {
+      display: grid; grid-template-columns: 68px 1fr 28px 1fr auto;
+      gap: 8px; align-items: center; margin-bottom: 10px;
+    }
+    .scramble-round-row:last-child { margin-bottom: 0; }
+    .scramble-round-label { font-size: 12px; font-weight: 700; color: #888; }
+    .scramble-vs-lbl { text-align: center; font-size: 11px; color: #ccc; font-weight: 700; }
+    .scramble-score-inp {
+      width: 100%; padding: 9px 6px; font-size: 17px; font-weight: 700;
+      text-align: center; border: 1.5px solid #ddd; border-radius: 8px;
+      background: #fafafa; -webkit-appearance: none; transition: border-color 0.15s;
+      font-family: inherit;
+    }
+    .scramble-score-inp:focus { outline: none; border-color: #f9a825; background: white; box-shadow: 0 0 0 3px rgba(249,168,37,0.2); }
+    .scramble-score-inp.filled { border-color: #66bb6a; background: #f9fef9; }
+    .scramble-pts-pair { display: flex; gap: 4px; min-width: 84px; justify-content: flex-end; }
+    .pts-chip {
+      background: #f0f0f0; border-radius: 6px; padding: 5px 8px;
+      font-size: 12px; font-weight: 800; min-width: 36px; text-align: center;
+    }
+    .pts-chip.win  { background: #e8f5e9; color: #2e7d32; }
+    .pts-chip.loss { background: #fce4ec; color: #c62828; }
+    .pts-chip.draw { background: #fff8e1; color: #f57f17; }
+    .scramble-total-bar {
+      background: #f8f9fa; border-top: 2px solid #ebebeb; padding: 10px 16px;
+      display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center;
+    }
+    .total-bar-side { display: flex; align-items: center; gap: 6px; }
+    .total-bar-side.right { justify-content: flex-end; }
+    .total-bar-pts { font-size: 20px; font-weight: 900; }
+    .total-bar-lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #888; }
+    .total-bar-vs { text-align: center; font-size: 11px; color: #bbb; font-weight: 700; text-transform: uppercase; }
+
     /* ── Toast ── */
     .toast {
       position: fixed;
@@ -562,6 +644,7 @@
     <div id="startlista-section"></div>
     <div class="klaner-grid" id="klaner-grid"><!-- rendered by JS --></div>
     <div id="skytte-ordning-section"></div>
+    <div id="scramble-section"></div>
 
     <div class="results-grid">
       <div class="results-card">
@@ -627,6 +710,33 @@ const SLOPE_TABLES = {
     [31.5,35],[32.4,36]
   ]
 };
+
+// ══════════════════════════════════════════════
+//  NÄSSJÖ GK – Slope 121, CR 70.7, Par 72
+// ══════════════════════════════════════════════
+const NASSJO_GK = { slope: 121, cr: 70.7, par: 72 };
+
+function nassjoSpelHcp(hcpIdx) {
+  if (hcpIdx === null || hcpIdx === undefined) return null;
+  return Math.round(hcpIdx * (NASSJO_GK.slope / 113) + (NASSJO_GK.cr - NASSJO_GK.par));
+}
+
+// SGF 2-man scramble: 18h team HCP → halved for 9h (to nearest 0.5)
+function scrambleTeamHcp9(hcpA, hcpB) {
+  const sa = nassjoSpelHcp(hcpA), sb = nassjoSpelHcp(hcpB);
+  if (sa === null || sb === null) return null;
+  const lo = Math.min(sa, sb), hi = Math.max(sa, sb);
+  const team18 = Math.round(lo * 0.5 + hi * 0.2);
+  return Math.round(team18 / 2 * 2) / 2;
+}
+
+function scrambleRoundResult(scoreA, scoreB, hcpA, hcpB) {
+  if (scoreA === null || scoreB === null) return { ptsA: null, ptsB: null };
+  const netA = scoreA - (hcpA || 0), netB = scoreB - (hcpB || 0);
+  if (netA < netB) return { ptsA: 3, ptsB: 0 };
+  if (netA > netB) return { ptsA: 0, ptsB: 3 };
+  return { ptsA: 1.5, ptsB: 1.5 };
+}
 
 // ══════════════════════════════════════════════
 //  STATE
@@ -1008,6 +1118,7 @@ function render() {
   const d = derive();
   if (!d) return;
   renderKlaner(d);
+  renderScramble(d);
   renderResults(d);
 }
 
@@ -1218,6 +1329,166 @@ function renderResults(d) {
         <td class="pts-cell">${k._kdart !== null ? fmtN(k._kdart) : '–'}</td>
         <td class="total-cell">${fmtN(k._ktot)}</td>
       </tr>`).join('');
+}
+
+// ══════════════════════════════════════════════
+//  SCRAMBLE RENDER
+// ══════════════════════════════════════════════
+function renderScramble(d) {
+  const el = document.getElementById('scramble-section');
+  if (!el) return;
+  if (!state.scramble_enabled || !state.scramble_matches) { el.innerHTML = ''; return; }
+
+  const focusedId = document.activeElement ? document.activeElement.id : null;
+  const focusedSel = (document.activeElement && document.activeElement.selectionStart !== undefined)
+    ? { s: document.activeElement.selectionStart, e: document.activeElement.selectionEnd } : null;
+
+  const klanMap = {};
+  d.klaner.forEach(k => { klanMap[k.id] = k; });
+
+  function getHcp(klan, name) {
+    if (!name) return null;
+    const p = klan.spelare.find(s => s.namn === name);
+    return p ? parseNum(p.hcp) : null;
+  }
+
+  function ptsChip(pts) {
+    if (pts === null) return `<span class="pts-chip">–</span>`;
+    const cls = pts === 3 ? 'win' : pts === 0 ? 'loss' : 'draw';
+    return `<span class="pts-chip ${cls}">${fmtN(pts, 1)}</span>`;
+  }
+
+  function teamBlock(klan, players, teamHcp, side, mi) {
+    const hcps = players.map(n => getHcp(klan, n));
+
+    const slots = [0, 1].map(slot => {
+      const sel = players[slot] || '';
+      const hcp = hcps[slot];
+      const shcp = nassjoSpelHcp(hcp);
+      const selOpts = `<option value="">– Välj spelare –</option>` +
+        klan.spelare.map(p => `<option value="${p.namn}"${p.namn === sel ? ' selected' : ''}>${p.namn}</option>`).join('');
+      return `
+        <div class="scramble-player-slot">
+          <label>Spelare ${slot + 1}</label>
+          <select id="sc-sel-${mi}-${side}-${slot}" class="scramble-select${sel ? ' filled' : ''}"
+            onchange="onScramblePlayer(${mi},'${side}',${slot},this.value)">${selOpts}</select>
+          ${shcp !== null ? `<div class="scramble-shcp-hint">SHcp (Nässjö): ${shcp}</div>` : ''}
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="scramble-team">
+        <div class="scramble-team-heading">
+          <span class="klan-dot" style="background:${klan.color}"></span>${klan.name}
+        </div>
+        ${slots}
+        <div class="team-hcp-row">
+          <span class="hcp-lbl">Team HCP (9h)</span>
+          <span class="hcp-val">${teamHcp !== null ? fmtN(teamHcp, 1) : '–'}</span>
+        </div>
+      </div>`;
+  }
+
+  const cardsHtml = state.scramble_matches.map((match, mi) => {
+    const kA = klanMap[match.klanA], kB = klanMap[match.klanB];
+    if (!kA || !kB) return '';
+
+    const pA = match.playersA || [null, null];
+    const pB = match.playersB || [null, null];
+    const hcpA = [getHcp(kA, pA[0]), getHcp(kA, pA[1])];
+    const hcpB = [getHcp(kB, pB[0]), getHcp(kB, pB[1])];
+    const teamHcpA = (hcpA[0] !== null && hcpA[1] !== null) ? scrambleTeamHcp9(hcpA[0], hcpA[1]) : null;
+    const teamHcpB = (hcpB[0] !== null && hcpB[1] !== null) ? scrambleTeamHcp9(hcpB[0], hcpB[1]) : null;
+
+    const rounds = match.rounds || [{scoreA:null,scoreB:null},{scoreA:null,scoreB:null}];
+    const results = rounds.map(r =>
+      scrambleRoundResult(parseInt2(r.scoreA), parseInt2(r.scoreB), teamHcpA, teamHcpB));
+
+    const hasAny = results.some(r => r.ptsA !== null);
+    const totA = results.reduce((s, r) => r.ptsA !== null ? s + r.ptsA : s, 0);
+    const totB = results.reduce((s, r) => r.ptsB !== null ? s + r.ptsB : s, 0);
+
+    const roundsHtml = rounds.map((r, ri) => {
+      const res = results[ri];
+      const vA = r.scoreA !== null ? r.scoreA : '';
+      const vB = r.scoreB !== null ? r.scoreB : '';
+      return `
+        <div class="scramble-round-row">
+          <span class="scramble-round-label">Runda ${ri + 1}</span>
+          <input id="sc-score-${mi}-${ri}-A" class="scramble-score-inp${r.scoreA !== null ? ' filled' : ''}"
+            type="text" inputmode="numeric" value="${vA}" placeholder="Slag"
+            oninput="onScrambleScore(${mi},${ri},'A',this)">
+          <span class="scramble-vs-lbl">vs</span>
+          <input id="sc-score-${mi}-${ri}-B" class="scramble-score-inp${r.scoreB !== null ? ' filled' : ''}"
+            type="text" inputmode="numeric" value="${vB}" placeholder="Slag"
+            oninput="onScrambleScore(${mi},${ri},'B',this)">
+          <div class="scramble-pts-pair">${ptsChip(res.ptsA)}${ptsChip(res.ptsB)}</div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="scramble-matchup-card">
+        <div class="scramble-matchup-header">
+          <span class="klan-dot" style="background:${kA.color}"></span>${kA.name}
+          <span class="vs-sep">vs</span>
+          <span class="klan-dot" style="background:${kB.color}"></span>${kB.name}
+        </div>
+        <div class="scramble-teams-row">
+          ${teamBlock(kA, pA, teamHcpA, 'A', mi)}
+          ${teamBlock(kB, pB, teamHcpB, 'B', mi)}
+        </div>
+        <div class="scramble-rounds-section">${roundsHtml}</div>
+        <div class="scramble-total-bar">
+          <div class="total-bar-side">
+            <span class="klan-dot" style="background:${kA.color}"></span>
+            <span class="total-bar-pts" style="color:${kA.color}">${hasAny ? fmtN(totA,1) : '–'}</span>
+            <span class="total-bar-lbl">poäng</span>
+          </div>
+          <div class="total-bar-vs">Totalt</div>
+          <div class="total-bar-side right">
+            <span class="total-bar-lbl">poäng</span>
+            <span class="total-bar-pts" style="color:${kB.color}">${hasAny ? fmtN(totB,1) : '–'}</span>
+            <span class="klan-dot" style="background:${kB.color}"></span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="scramble-section">
+      <div class="scramble-section-title">⛳ GC1 – 2v2 Scramble · Nässjö GK</div>
+      ${cardsHtml}
+    </div>`;
+
+  if (focusedId) {
+    const toFocus = document.getElementById(focusedId);
+    if (toFocus) {
+      toFocus.focus();
+      if (focusedSel && toFocus.setSelectionRange) {
+        toFocus.setSelectionRange(focusedSel.s, focusedSel.e);
+      }
+    }
+  }
+}
+
+function onScramblePlayer(mi, side, slot, playerName) {
+  if (!state.scramble_matches) return;
+  const key = side === 'A' ? 'playersA' : 'playersB';
+  if (!state.scramble_matches[mi][key]) state.scramble_matches[mi][key] = [null, null];
+  state.scramble_matches[mi][key][slot] = playerName || null;
+  markUnsaved();
+  renderScramble(derive());
+}
+
+function onScrambleScore(mi, ri, side, el) {
+  if (!state.scramble_matches) return;
+  const val = parseInt2(el.value.trim());
+  const key = side === 'A' ? 'scoreA' : 'scoreB';
+  if (!state.scramble_matches[mi].rounds) state.scramble_matches[mi].rounds = [{},{}];
+  state.scramble_matches[mi].rounds[ri][key] = val;
+  el.classList.toggle('filled', val !== null && el.value.trim() !== '');
+  markUnsaved();
+  renderScramble(derive());
 }
 
 // ══════════════════════════════════════════════

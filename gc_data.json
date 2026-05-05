@@ -354,5 +354,42 @@
       ]
     }
   ],
+  "scramble_enabled": true,
+  "scramble_course": "nassjo_gk",
+  "scramble_matches": [
+    {
+      "id": "selander_norrby",
+      "klanA": "selander",
+      "klanB": "norrby",
+      "playersA": [null, null],
+      "playersB": [null, null],
+      "rounds": [
+        {"scoreA": null, "scoreB": null},
+        {"scoreA": null, "scoreB": null}
+      ]
+    },
+    {
+      "id": "selander_lyrinder",
+      "klanA": "selander",
+      "klanB": "lyrinder",
+      "playersA": [null, null],
+      "playersB": [null, null],
+      "rounds": [
+        {"scoreA": null, "scoreB": null},
+        {"scoreA": null, "scoreB": null}
+      ]
+    },
+    {
+      "id": "norrby_lyrinder",
+      "klanA": "norrby",
+      "klanB": "lyrinder",
+      "playersA": [null, null],
+      "playersB": [null, null],
+      "rounds": [
+        {"scoreA": null, "scoreB": null},
+        {"scoreA": null, "scoreB": null}
+      ]
+    }
+  ],
   "year": 2026
 }

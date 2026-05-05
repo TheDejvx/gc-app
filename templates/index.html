@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Gentlemen Challenge</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #eef0f3;
+      color: #1a1a2e;
+      font-size: 15px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #162116 0%, #2d5a27 100%);
+      color: white;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h1 { font-size: 20px; font-weight: 800; letter-spacing: 0.5px; }
+    header .sub { font-size: 12px; opacity: 0.7; margin-top: 2px; }
+    header .spacer { flex: 1; }
+    #save-status { font-size: 12px; color: #f9a825; }
+    #save-btn {
+      background: #f9a825;
+      color: #1a1a2e;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    #save-btn:hover { background: #fbc02d; }
+    #save-btn:active { background: #f57f17; }
+    #save-btn:disabled { opacity: 0.5; cursor: default; }
+
+    /* ── Course bar ── */
+    .course-bar {
+      background: white;
+      border-bottom: 1px solid #ddd;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .course-field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+    }
+    .gc-input-small {
+      border: 1.5px solid #ccc;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 15px;
+      width: 150px;
+      transition: border-color 0.15s;
+    }
+    .gc-input-small.narrow { width: 72px; }
+    .gc-input-small:focus { outline: none; border-color: #f9a825; box-shadow: 0 0 0 3px rgba(249,168,37,0.2); }
+
+    /* ── Main layout ── */
+    main { padding: 16px 14px 60px; max-width: 1400px; margin: 0 auto; }
+
+    /* ── Klan grid ── */
+    .klaner-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 1100px) { .klaner-grid { grid-template-columns: 1fr; } }
+
+    /* ── Klan card ── */
+    .klan-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    .klan-header {
+      padding: 13px 16px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .klan-header h2 { font-size: 17px; font-weight: 800; }
+    .klan-badge-total {
+      margin-left: auto;
+      text-align: right;
+    }
+    .klan-badge-total .tot-num { font-size: 24px; font-weight: 900; line-height: 1; }
+    .klan-badge-total .tot-label { font-size: 10px; opacity: 0.7; }
+
+    /* ── Player grid inside klan ── */
+    .players-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+    @media (max-width: 500px) { .players-grid { grid-template-columns: 1fr; } }
+
+    /* ── Player card ── */
+    .player-card {
+      padding: 13px 14px;
+      border-right: 1px solid #f0f0f0;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .player-card:nth-child(even) { border-right: none; }
+    .player-card:nth-child(3),
+    .player-card:nth-child(4) { border-bottom: none; }
+    @media (max-width: 500px) {
+      .player-card { border-right: none; }
+      .player-card:nth-child(3) { border-bottom: 1px solid #f0f0f0; }
+      .player-card:last-child { border-bottom: none; }
+    }
+
+    .player-name-input {
+      width: 100%;
+      font-weight: 700;
+      font-size: 14px;
+      color: #333;
+      border: 1.5px solid transparent;
+      border-radius: 6px;
+      padding: 4px 6px;
+      background: transparent;
+      transition: border-color 0.15s, background 0.15s;
+      cursor: text;
+    }
+    .player-name-input:hover { border-color: #ddd; background: #f5f5f5; }
+    .player-name-input:focus {
+      outline: none;
+      border-color: #f9a825;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(249,168,37,0.2);
+    }
+
+    /* ── Pair of inputs ── */
+    .input-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    /* ── Input group ── */
+    .input-group { display: flex; flex-direction: column; gap: 4px; }
+    .input-group label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #888;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Main input field ── */
+    .gc-input {
+      width: 100%;
+      padding: 10px 11px;
+      font-size: 16px;        /* prevents iOS zoom */
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      background: #fafafa;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+      -webkit-appearance: none;
+    }
+    .gc-input:focus {
+      outline: none;
+      border-color: #f9a825;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(249,168,37,0.2);
+    }
+    .gc-input.filled {
+      border-color: #66bb6a;
+      background: #f9fef9;
+    }
+    .gc-input.filled:focus {
+      border-color: #f9a825;
+      box-shadow: 0 0 0 3px rgba(249,168,37,0.2);
+    }
+    .gc-input::placeholder { color: #bbb; }
+
+    /* ── Calculated result rows ── */
+    .calc-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .calc-chip {
+      background: #f0f4ff;
+      border-radius: 6px;
+      padding: 4px 9px;
+      font-size: 12px;
+      color: #555;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .calc-chip .label { opacity: 0.7; }
+    .calc-chip .val { font-weight: 800; color: #1a1a2e; font-size: 13px; }
+    .calc-chip .val.green { color: #2e7d32; }
+    .calc-chip.empty { opacity: 0.4; }
+
+    /* ── Player total ── */
+    .player-total {
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #f8f9fa;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .player-total .tot-label { font-size: 12px; font-weight: 700; color: #777; text-transform: uppercase; }
+    .player-total .tot-val { font-size: 20px; font-weight: 900; color: #1a1a2e; }
+    .player-total .tot-val.empty { color: #ccc; font-size: 16px; }
+
+    /* ── Klan scramble ── */
+    .klan-scramble {
+      background: #f7f8fa;
+      border-top: 2px solid #ebebeb;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .scramble-input-group { min-width: 120px; }
+    .scramble-input-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    .scramble-stats {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .stat-pill {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 20px;
+      padding: 5px 12px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+    }
+    .stat-pill .s-label { color: #999; }
+    .stat-pill .s-val { font-weight: 800; color: #333; }
+    .stat-pill.total-pill {
+      background: #1a2e1a;
+      border-color: transparent;
+      padding: 7px 16px;
+    }
+    .stat-pill.total-pill .s-label { color: rgba(255,255,255,0.6); }
+    .stat-pill.total-pill .s-val { font-size: 18px; color: white; }
+
+    /* ── Results ── */
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 750px) { .results-grid { grid-template-columns: 1fr; } }
+
+    .results-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    .results-card h2 {
+      padding: 13px 16px;
+      background: #1a2e1a;
+      color: white;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .res-table { width: 100%; border-collapse: collapse; }
+    .res-table th {
+      background: #f5f7f5;
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #777;
+      text-align: center;
+      text-transform: uppercase;
+      border-bottom: 2px solid #e8e8e8;
+    }
+    .res-table th.left { text-align: left; }
+    .res-table td {
+      padding: 11px 10px;
+      border-bottom: 1px solid #f2f2f2;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .res-table td.left { text-align: left; }
+    .res-table tr:last-child td { border-bottom: none; }
+    .res-table tr:hover td { background: #fafdf9; }
+
+    .rank-num {
+      font-size: 20px;
+      font-weight: 900;
+      color: #ddd;
+      width: 36px;
+      text-align: center;
+    }
+    .rank-num.gold { color: #f9a825; }
+    .rank-num.silver { color: #90a4ae; }
+    .rank-num.bronze { color: #a1887f; }
+
+    .name-cell { font-weight: 700; font-size: 14px; }
+    .pts-cell { font-weight: 600; }
+    .total-cell { font-weight: 900; font-size: 17px; color: #1a1a2e; }
+    .klan-dot {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      margin-right: 5px;
+      flex-shrink: 0;
+    }
+
+    /* ── Tab bar ── */
+    .tab-bar {
+      background: white;
+      border-bottom: 2px solid #e0e0e0;
+      padding: 0 14px;
+      display: flex;
+      gap: 2px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tab-btn {
+      padding: 12px 18px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      color: #888;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+    }
+    .tab-btn:hover { color: #555; }
+    .tab-btn.active { color: #2e7d32; border-bottom-color: #2e7d32; }
+    .tab-tag {
+      background: #f9a825;
+      color: #1a1a2e;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 800;
+    }
+
+    /* ── History view ── */
+    .hist-info-bar {
+      background: #f0f4f0;
+      border-bottom: 1px solid #ddd;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-weight: 600;
+      color: #555;
+      font-size: 14px;
+      flex-wrap: wrap;
+    }
+    .hist-main { padding: 16px 14px 60px; max-width: 1400px; margin: 0 auto; }
+    .hist-player-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .hist-player-table th {
+      background: #f8f9fa;
+      padding: 7px 8px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #888;
+      text-transform: uppercase;
+      border-bottom: 1px solid #eee;
+    }
+    .hist-player-table th:first-child { text-align: left; padding-left: 14px; }
+    .hist-player-table td {
+      padding: 9px 8px;
+      text-align: center;
+      border-bottom: 1px solid #f5f5f5;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .hist-player-table td:first-child { text-align: left; padding-left: 14px; font-weight: 700; }
+    .hist-player-table tr:last-child td { border-bottom: none; }
+    .hist-tot { font-weight: 900 !important; font-size: 15px !important; }
+
+    /* ── Startlista ── */
+    .startlista-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+    }
+    .startlista-header {
+      padding: 13px 16px;
+      background: #1a2e1a;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .startlista-header h2 { font-size: 16px; font-weight: 800; }
+    .startlista-sub { font-size: 12px; opacity: 0.6; margin-left: auto; }
+    .startlista-pairs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: #f0f0f0;
+    }
+    @media (max-width: 900px) { .startlista-pairs { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .startlista-pairs { grid-template-columns: 1fr; } }
+    .start-pair { background: white; padding: 12px 16px; }
+    .car-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #bbb;
+      letter-spacing: 0.5px;
+      margin-bottom: 7px;
+    }
+    .start-player {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 0;
+    }
+    .start-player:not(:last-child) { border-bottom: 1px solid #f5f5f5; padding-bottom: 8px; margin-bottom: 4px; }
+    .start-rank { font-size: 12px; font-weight: 900; color: #ddd; width: 22px; flex-shrink: 0; text-align: right; }
+    .start-rank.gold   { color: #f9a825; }
+    .start-rank.silver { color: #90a4ae; }
+    .start-rank.bronze { color: #a1887f; }
+    .start-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .start-name { font-weight: 700; font-size: 13px; flex: 1; }
+    .start-score { font-size: 12px; color: #aaa; font-weight: 600; }
+
+    /* ── Skytte Startordning ── */
+    .skytte-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+    }
+    .skytte-header {
+      padding: 13px 16px;
+      background: #1a2e1a;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .skytte-header h2 { font-size: 16px; font-weight: 800; }
+    .skytte-sub { font-size: 12px; opacity: 0.6; margin-left: auto; }
+    .skytte-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: #f0f0f0;
+    }
+    @media (max-width: 900px) { .skytte-list { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .skytte-list { grid-template-columns: 1fr; } }
+    .skytte-player { background: white; padding: 10px 14px; display: flex; align-items: center; gap: 8px; }
+    .skytte-pos { font-size: 13px; font-weight: 900; color: #ddd; width: 22px; flex-shrink: 0; text-align: right; }
+    .skytte-pos.gold   { color: #f9a825; }
+    .skytte-pos.silver { color: #90a4ae; }
+    .skytte-pos.bronze { color: #a1887f; }
+    .skytte-name { font-weight: 700; font-size: 13px; flex: 1; }
+    .skytte-golf { font-size: 12px; color: #888; font-weight: 700; white-space: nowrap; }
+    .skytte-player.no-score .skytte-name { color: #bbb; font-weight: 600; }
+    .skytte-player.no-score .skytte-pos { color: #e8e8e8; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #2e7d32;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-weight: 700;
+      font-size: 15px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 999;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.error { background: #c62828; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>⛳ Gentlemen Challenge</h1>
+    <div class="sub" id="header-sub">Laddar…</div>
+  </div>
+  <div class="spacer"></div>
+  <span id="save-status"></span>
+  <button id="save-btn">Spara</button>
+</header>
+
+<div class="tab-bar" id="tab-bar"><!-- tabs generated by JS --></div>
+
+<div id="view-current">
+  <div class="course-bar">
+    <div class="course-field">
+      🏌️ Bana:
+      <input type="text" class="gc-input-small" id="course-name-input" placeholder="Banans namn">
+    </div>
+    <div class="course-field">
+      Par:
+      <input type="text" inputmode="numeric" class="gc-input-small narrow" id="course-par-input" placeholder="72">
+    </div>
+  </div>
+
+  <main>
+    <div id="startlista-section"></div>
+    <div class="klaner-grid" id="klaner-grid"><!-- rendered by JS --></div>
+    <div id="skytte-ordning-section"></div>
+
+    <div class="results-grid">
+      <div class="results-card">
+        <h2>🥇 GC Singel Placering</h2>
+        <table class="res-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th class="left">Namn</th>
+              <th title="Golf poäng">Golf</th>
+              <th title="Skytte – antal duvor">Skytte</th>
+              <th title="Dart – total ÷ 4">Dart</th>
+              <th>Totalt</th>
+            </tr>
+          </thead>
+          <tbody id="singel-body">
+            <tr><td colspan="6" style="text-align:center;color:#bbb;padding:24px;font-size:13px">Fyll i poäng ovan</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="results-card">
+        <h2>🏆 GC Klan Placering</h2>
+        <table class="res-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th class="left">Klan</th>
+              <th title="Klan golf (scramble)">Golf</th>
+              <th title="Klan skytte">Skytte</th>
+              <th title="Klan dart">Dart</th>
+              <th>Totalt</th>
+            </tr>
+          </thead>
+          <tbody id="klan-body">
+            <tr><td colspan="6" style="text-align:center;color:#bbb;padding:24px;font-size:13px">Fyll i poäng ovan</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="view-history" style="display:none">
+  <div id="history-content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  SLOPE TABLE – Eksjö GK  [maxHcp, spelHcp]
+// ══════════════════════════════════════════════
+const SLOPE_TABLES = {
+  eksjo_gk: [
+    [1.3,0],[2.2,1],[3.1,2],[3.9,3],[4.8,4],
+    [5.6,5],[6.5,6],[7.4,7],[8.25,8],[9.1,9],
+    [10.0,10],[10.8,11],[11.7,12],[12.5,13],[13.4,14],
+    [14.3,15],[15.1,16],[16.0,17],[16.9,18],[17.7,19],
+    [18.6,20],[19.4,21],[20.3,22],[21.2,23],[22.0,24],
+    [22.9,25],[23.8,26],[24.6,27],[25.5,28],[26.3,29],
+    [27.2,30],[28.1,31],[28.9,32],[29.8,33],[30.7,34],
+    [31.5,35],[32.4,36]
+  ]
+};
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let state = null;
+let unsaved = false;
+let activeTab = 'current';
+
+// ══════════════════════════════════════════════
+//  PARSING  (handle both , and . as decimal)
+// ══════════════════════════════════════════════
+function parseNum(str) {
+  if (str === null || str === undefined) return null;
+  const s = String(str).trim().replace(',', '.');
+  if (s === '') return null;
+  const n = parseFloat(s);
+  return isNaN(n) ? null : n;
+}
+
+function parseInt2(str) {
+  const n = parseNum(str);
+  return n === null ? null : Math.round(n);
+}
+
+// ══════════════════════════════════════════════
+//  CALCULATIONS
+// ══════════════════════════════════════════════
+function getSpelhandicap(hcp, key) {
+  if (hcp === null) return null;
+  const tbl = SLOPE_TABLES[key] || SLOPE_TABLES.eksjo_gk;
+  for (const [maxH, ph] of tbl) if (hcp <= maxH) return ph;
+  return 36;
+}
+
+// Individuell golf: begränsas till min 20, max 40
+function golfPts(slag, shcp, par) {
+  if (slag === null || shcp === null) return null;
+  return Math.max(20, Math.min(40, 36 + par - slag + shcp));
+}
+
+// Klan scramble golf: INGEN begränsning (kan vara > 40)
+function golfPtsKlan(slag, shcp, par) {
+  if (slag === null || shcp === null) return null;
+  return 36 + par - slag + shcp;
+}
+
+function dartPts(raw) {
+  return raw === null ? null : raw / 4;
+}
+
+function klanHcpRaw(spelare) {
+  const hs = spelare.map(p => parseNum(p.hcp)).filter(h => h !== null).sort((a,b) => a-b);
+  if (hs.length < 4) return null;
+  return hs[0]*0.2 + hs[1]*0.15 + hs[2]*0.1 + hs[3]*0.05;
+}
+
+function klanSkytte(spelare) {
+  const vs = spelare.map(p => parseNum(p.skytte)).filter(v => v !== null);
+  if (vs.length < 4) return null;
+  return vs.reduce((a,b) => a+b, 0) / 2;
+}
+
+function klanDart(spelare) {
+  const vs = spelare.map(p => dartPts(parseNum(p.dart))).filter(v => v !== null);
+  if (vs.length < 4) return null;
+  return vs.reduce((a,b) => a+b, 0) / 2;
+}
+
+// ══════════════════════════════════════════════
+//  DERIVED  (pure function, no side effects)
+// ══════════════════════════════════════════════
+function deriveData(data) {
+  if (!data) return null;
+  const par = parseInt2(data.course.par) || 72;
+  const sk = data.course.slope_table || 'eksjo_gk';
+
+  return {
+    ...data,
+    course: { ...data.course, par },
+    klaner: data.klaner.map(klan => {
+      const sp = klan.spelare.map(p => {
+        const hcp   = parseNum(p.hcp);
+        const slag  = parseInt2(p.slag);
+        const sky   = parseNum(p.skytte);
+        const dart  = parseNum(p.dart);
+        const shcp  = getSpelhandicap(hcp, sk);
+        const golf  = golfPts(slag, shcp, par);
+        const dpts  = dartPts(dart);
+        const tot   = (golf !== null && sky !== null && dpts !== null)
+                      ? golf + sky + dpts : null;
+        return { ...p, _hcp: hcp, _slag: slag, _sky: sky, _dart: dart,
+                 _shcp: shcp, _golf: golf, _dpts: dpts, _tot: tot };
+      });
+
+      const khRaw = klanHcpRaw(klan.spelare);
+      const kslope = khRaw !== null ? getSpelhandicap(khRaw, sk) : null;
+      const kslag  = parseInt2(klan.klan_slag);
+
+      // Klan Golf = Scramble golf pts + Genomsnitt(individuella golf pts)
+      const kgolfScramble = golfPtsKlan(kslag, kslope, par);
+      const indivGolf = sp.map(p => p._golf).filter(g => g !== null);
+      const indivGolfAvg = indivGolf.length === sp.length
+        ? indivGolf.reduce((a, b) => a + b, 0) / sp.length : null;
+      // 2024 used scramble-only; 2025+ adds individual golf average
+      const useSnitt = (data.kgolf_formula || 'scramble_plus_snitt') !== 'scramble';
+      const kgolf = useSnitt
+        ? ((kgolfScramble !== null && indivGolfAvg !== null) ? kgolfScramble + indivGolfAvg : null)
+        : kgolfScramble;
+
+      const ksky   = klanSkytte(klan.spelare);
+      const kdart  = klanDart(klan.spelare);
+      const ktot   = (kgolf !== null && ksky !== null && kdart !== null)
+                     ? kgolf + ksky + kdart : null;
+
+      return { ...klan, spelare: sp,
+               _khRaw: khRaw, _kslope: kslope,
+               _kgolfScramble: kgolfScramble, _indivGolfAvg: indivGolfAvg,
+               _kgolf: kgolf, _ksky: ksky, _kdart: kdart, _ktot: ktot };
+    })
+  };
+}
+
+function derive() { return deriveData(state); }
+
+// ══════════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════════
+function buildTabs() {
+  const bar = document.getElementById('tab-bar');
+  let html = `<button class="tab-btn active" data-tab="current" onclick="switchTab('current')">${state.year || '–'} <span class="tab-tag">Aktuellt</span></button>`;
+  if (state.history && state.history.length > 0) {
+    state.history.slice().sort((a,b) => b.year - a.year).forEach(h => {
+      html += `<button class="tab-btn" data-tab="${h.year}" onclick="switchTab(${h.year})">${h.year}</button>`;
+    });
+  }
+  bar.innerHTML = html;
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.tab == tab));
+
+  const isCurrent = tab === 'current';
+  document.getElementById('view-current').style.display = isCurrent ? '' : 'none';
+  document.getElementById('view-history').style.display = isCurrent ? 'none' : '';
+  document.getElementById('save-btn').style.display = isCurrent ? '' : 'none';
+  document.getElementById('save-status').style.display = isCurrent ? '' : 'none';
+
+  if (!isCurrent) renderHistoryView(tab);
+}
+
+// ══════════════════════════════════════════════
+//  STARTLISTA
+// ══════════════════════════════════════════════
+function computeStartlista(hist) {
+  const d = deriveData(hist);
+  const ranked = [];
+  d.klaner.forEach(klan => {
+    klan.spelare.forEach(p => {
+      if (p._tot !== null)
+        ranked.push({ ...p, klanId: klan.id, klanColor: klan.color });
+    });
+  });
+  ranked.sort((a, b) => b._tot - a._tot);
+
+  const pairs = [];
+  const used = new Set();
+  for (let i = 0; i < ranked.length; i++) {
+    if (used.has(i)) continue;
+    let partner = -1;
+    for (let j = i + 1; j < ranked.length; j++) {
+      if (!used.has(j) && ranked[j].klanId !== ranked[i].klanId) { partner = j; break; }
+    }
+    // Fallback: pair with next available even if same klan
+    if (partner === -1) {
+      for (let j = i + 1; j < ranked.length; j++) {
+        if (!used.has(j)) { partner = j; break; }
+      }
+    }
+    used.add(i);
+    if (partner !== -1) used.add(partner);
+    pairs.push([
+      { ...ranked[i], rank: i + 1 },
+      partner !== -1 ? { ...ranked[partner], rank: partner + 1 } : null
+    ]);
+  }
+  return pairs;
+}
+
+function renderStartlista() {
+  const el = document.getElementById('startlista-section');
+  if (!el) return;
+  const prevHist = (state.history || []).reduce((best, h) =>
+    (!best || h.year > best.year) ? h : best, null);
+  if (!prevHist) { el.innerHTML = ''; return; }
+
+  const pairs = computeStartlista(prevHist);
+  const rankCls = ['gold','silver','bronze'];
+
+  const pairsHtml = pairs.map((pair, i) => {
+    const playerHtml = pair.filter(Boolean).map(p => `
+      <div class="start-player">
+        <span class="start-rank ${rankCls[p.rank-1]||''}">#${p.rank}</span>
+        <span class="start-dot" style="background:${p.klanColor}"></span>
+        <span class="start-name">${p.namn}</span>
+        <span class="start-score">${fmtN(p._tot)}</span>
+      </div>`).join('');
+    return `<div class="start-pair"><div class="car-label">Bil ${i+1}</div>${playerHtml}</div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="startlista-card">
+      <div class="startlista-header">
+        <h2>🚗 Startlista ${state.year || ''}</h2>
+        <span class="startlista-sub">Baserad på ${prevHist.year} singel placering</span>
+      </div>
+      <div class="startlista-pairs">${pairsHtml}</div>
+    </div>`;
+}
+
+function renderSkyteOrdning(d) {
+  const el = document.getElementById('skytte-ordning-section');
+  if (!el) return;
+
+  const all = [];
+  d.klaner.forEach(klan => {
+    klan.spelare.forEach(p => all.push({ ...p, klanColor: klan.color }));
+  });
+
+  const withGolf    = all.filter(p => p._golf !== null).sort((a, b) => b._golf - a._golf);
+  const withoutGolf = all.filter(p => p._golf === null);
+
+  if (withGolf.length === 0) { el.innerHTML = ''; return; }
+
+  const rankCls = ['gold','silver','bronze'];
+  const ordered = [...withGolf, ...withoutGolf];
+
+  const rows = ordered.map((p, i) => {
+    const hasScore = p._golf !== null;
+    const posCls = hasScore ? (rankCls[i] || '') : '';
+    return `<div class="skytte-player${hasScore ? '' : ' no-score'}">
+      <span class="skytte-pos ${posCls}">${i + 1}</span>
+      <span class="klan-dot" style="background:${p.klanColor}"></span>
+      <span class="skytte-name">${p.namn}</span>
+      <span class="skytte-golf">${hasScore ? p._golf + ' pts' : '–'}</span>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="skytte-card">
+      <div class="skytte-header">
+        <h2>🎯 Skytte Startordning</h2>
+        <span class="skytte-sub">Flest golf poäng skjuter först</span>
+      </div>
+      <div class="skytte-list">${rows}</div>
+    </div>`;
+}
+
+function renderResultsHtml(klaner) {
+  const rankCls = ['gold','silver','bronze'];
+  const allP = klaner.flatMap(klan =>
+    klan.spelare.map(p => ({ ...p, klanColor: klan.color }))
+  ).filter(p => p._tot !== null).sort((a,b) => b._tot - a._tot);
+
+  const singelRows = allP.length === 0
+    ? `<tr><td colspan="6" style="text-align:center;color:#bbb;padding:24px;font-size:13px">Inga data</td></tr>`
+    : allP.map((p, i) => `
+      <tr>
+        <td class="rank-num ${rankCls[i]||''}">${i+1}</td>
+        <td class="left name-cell"><span class="klan-dot" style="background:${p.klanColor}"></span>${p.namn}</td>
+        <td class="pts-cell">${p._golf ?? '–'}</td>
+        <td class="pts-cell">${p._sky ?? '–'}</td>
+        <td class="pts-cell">${p._dpts !== null ? fmtN(p._dpts) : '–'}</td>
+        <td class="total-cell">${fmtN(p._tot)}</td>
+      </tr>`).join('');
+
+  const sortedK = klaner.filter(k => k._ktot !== null).sort((a,b) => b._ktot - a._ktot);
+  const klanRows = sortedK.length === 0
+    ? `<tr><td colspan="6" style="text-align:center;color:#bbb;padding:24px;font-size:13px">Inga data</td></tr>`
+    : sortedK.map((k, i) => `
+      <tr>
+        <td class="rank-num ${rankCls[i]||''}">${i+1}</td>
+        <td class="left name-cell" style="color:${k.color}"><span class="klan-dot" style="background:${k.color}"></span>${k.name}</td>
+        <td class="pts-cell">${k._kgolf !== null ? fmtN(k._kgolf) : '–'}</td>
+        <td class="pts-cell">${k._ksky !== null ? fmtN(k._ksky) : '–'}</td>
+        <td class="pts-cell">${k._kdart !== null ? fmtN(k._kdart) : '–'}</td>
+        <td class="total-cell">${fmtN(k._ktot)}</td>
+      </tr>`).join('');
+
+  return `
+    <div class="results-grid">
+      <div class="results-card">
+        <h2>🥇 GC Singel Placering</h2>
+        <table class="res-table">
+          <thead><tr><th>#</th><th class="left">Namn</th><th>Golf</th><th>Skytte</th><th>Dart</th><th>Totalt</th></tr></thead>
+          <tbody>${singelRows}</tbody>
+        </table>
+      </div>
+      <div class="results-card">
+        <h2>🏆 GC Klan Placering</h2>
+        <table class="res-table">
+          <thead><tr><th>#</th><th class="left">Klan</th><th>Golf</th><th>Skytte</th><th>Dart</th><th>Totalt</th></tr></thead>
+          <tbody>${klanRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderHistoryView(year) {
+  const hist = (state.history || []).find(h => h.year == year);
+  if (!hist) return;
+  const d = deriveData(hist);
+
+  const klanerHtml = d.klaner.map(klan => `
+    <div class="klan-card">
+      <div class="klan-header" style="background:${klan.color}">
+        <h2>${klan.name}</h2>
+        <div class="klan-badge-total">
+          <div class="tot-num">${klan._ktot !== null ? fmtN(klan._ktot) : '–'}</div>
+          <div class="tot-label">klan total</div>
+        </div>
+      </div>
+      <table class="hist-player-table">
+        <thead><tr><th>Namn</th><th>HCP</th><th>Slag</th><th>Golf</th><th>Skytte</th><th>Dart</th><th>Total</th></tr></thead>
+        <tbody>
+          ${klan.spelare.map(p => `
+            <tr>
+              <td>${p.namn}</td>
+              <td>${p._hcp !== null ? fmtN(p._hcp,1) : '–'}</td>
+              <td>${p._slag !== null ? p._slag : '–'}</td>
+              <td>${p._golf !== null ? p._golf : '–'}</td>
+              <td>${p._sky !== null ? p._sky : '–'}</td>
+              <td>${p._dpts !== null ? fmtN(p._dpts) : '–'}</td>
+              <td class="hist-tot" style="color:${klan.color}">${p._tot !== null ? fmtN(p._tot) : '–'}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="klan-scramble">
+        <div class="scramble-stats">
+          ${klan.klan_slag !== null ? `<div class="stat-pill"><span class="s-label">Klan slag</span><span class="s-val">${klan.klan_slag}</span></div>` : ''}
+          ${klan._khRaw !== null ? `<div class="stat-pill"><span class="s-label">Klan HCP</span><span class="s-val">${fmtN(klan._khRaw)}</span></div>` : ''}
+          ${klan._kslope !== null ? `<div class="stat-pill"><span class="s-label">Slope</span><span class="s-val">${klan._kslope}</span></div>` : ''}
+          ${klan._kgolfScramble !== null ? `<div class="stat-pill"><span class="s-label">Scramble</span><span class="s-val">${klan._kgolfScramble}</span></div>` : ''}
+          ${klan._indivGolfAvg !== null ? `<div class="stat-pill"><span class="s-label">Snitt golf</span><span class="s-val">${fmtN(klan._indivGolfAvg)}</span></div>` : ''}
+          ${klan._kgolf !== null ? `<div class="stat-pill"><span class="s-label">Golf tot</span><span class="s-val">${fmtN(klan._kgolf)}</span></div>` : ''}
+          ${klan._ksky !== null ? `<div class="stat-pill"><span class="s-label">Skytte</span><span class="s-val">${fmtN(klan._ksky)}</span></div>` : ''}
+          ${klan._kdart !== null ? `<div class="stat-pill"><span class="s-label">Dart</span><span class="s-val">${fmtN(klan._kdart)}</span></div>` : ''}
+          ${klan._ktot !== null ? `<div class="stat-pill total-pill"><span class="s-label">Total</span><span class="s-val">${fmtN(klan._ktot)}</span></div>` : ''}
+        </div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('history-content').innerHTML = `
+    <div class="hist-info-bar">
+      <span>🏌️ ${hist.course.name}</span>
+      <span>Par ${hist.course.par}</span>
+      <span>📅 ${hist.year}</span>
+    </div>
+    <main class="hist-main">
+      <div class="klaner-grid">${klanerHtml}</div>
+      ${renderResultsHtml(d.klaner)}
+    </main>`;
+}
+
+// ══════════════════════════════════════════════
+//  FORMATTING
+// ══════════════════════════════════════════════
+function fmtN(v, d=2) {
+  if (v === null || v === undefined) return '–';
+  const s = parseFloat(v).toFixed(d);
+  return d > 0 ? s.replace(/\.?0+$/, '') : s;
+}
+
+// ══════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════
+function render() {
+  const d = derive();
+  if (!d) return;
+  renderKlaner(d);
+  renderResults(d);
+}
+
+function chip(label, val, green=false) {
+  if (val === null || val === undefined)
+    return `<div class="calc-chip empty"><span class="label">${label}</span><span class="val">–</span></div>`;
+  return `<div class="calc-chip"><span class="label">${label}</span><span class="val${green?' green':''}">${val}</span></div>`;
+}
+
+function renderKlaner(d) {
+  const grid = document.getElementById('klaner-grid');
+  // We will do partial updates to preserve focus on inputs
+  // Build the full HTML and diff by klan
+  d.klaner.forEach((klan, ki) => {
+    let card = document.getElementById(`klan-card-${ki}`);
+    const isNew = !card;
+
+    if (isNew) {
+      card = document.createElement('div');
+      card.className = 'klan-card';
+      card.id = `klan-card-${ki}`;
+      grid.appendChild(card);
+    }
+
+    // Update header
+    let hdr = card.querySelector('.klan-header');
+    if (!hdr) {
+      hdr = document.createElement('div');
+      hdr.className = 'klan-header';
+      hdr.style.background = klan.color;
+      hdr.innerHTML = `
+        <h2>${klan.name}</h2>
+        <div class="klan-badge-total">
+          <div class="tot-num" id="klan-${ki}-ktot">–</div>
+          <div class="tot-label">klan total</div>
+        </div>`;
+      card.appendChild(hdr);
+    }
+    const ktotEl = card.querySelector(`#klan-${ki}-ktot`);
+    if (ktotEl) ktotEl.textContent = klan._ktot !== null ? fmtN(klan._ktot) : '–';
+
+    // Player grid
+    let pg = card.querySelector('.players-grid');
+    if (!pg) {
+      pg = document.createElement('div');
+      pg.className = 'players-grid';
+      card.appendChild(pg);
+
+      klan.spelare.forEach((p, pi) => {
+        const pc = document.createElement('div');
+        pc.className = 'player-card';
+        pc.id = `pc-${ki}-${pi}`;
+        pc.innerHTML = `
+          <input class="player-name-input" type="text"
+            id="inp-${ki}-${pi}-namn" value="${p.namn}"
+            placeholder="Spelarens namn"
+            oninput="onInput(${ki},${pi},'namn',this)"
+            title="Klicka för att redigera namn">
+          <div class="input-pair">
+            <div class="input-group">
+              <label>HCP</label>
+              <input class="gc-input" type="text" inputmode="decimal"
+                id="inp-${ki}-${pi}-hcp" placeholder="ex. 12,4"
+                oninput="onInput(${ki},${pi},'hcp',this)">
+            </div>
+            <div class="input-group">
+              <label>Slag</label>
+              <input class="gc-input" type="text" inputmode="numeric"
+                id="inp-${ki}-${pi}-slag" placeholder="ex. 94"
+                oninput="onInput(${ki},${pi},'slag',this)">
+            </div>
+          </div>
+          <div class="calc-row" id="calc-golf-${ki}-${pi}"></div>
+          <div class="input-group">
+            <label>Skytte (duvor 0–20)</label>
+            <input class="gc-input" type="text" inputmode="numeric"
+              id="inp-${ki}-${pi}-skytte" placeholder="ex. 14"
+              oninput="onInput(${ki},${pi},'skytte',this)">
+          </div>
+          <div class="input-group">
+            <label>Dart (totala poäng 0–50)</label>
+            <input class="gc-input" type="text" inputmode="numeric"
+              id="inp-${ki}-${pi}-dart" placeholder="ex. 39"
+              oninput="onInput(${ki},${pi},'dart',this)">
+          </div>
+          <div class="calc-row" id="calc-dart-${ki}-${pi}"></div>
+          <div class="player-total" style="border-top: 2px solid ${klan.color}22">
+            <span class="tot-label">Singel Total</span>
+            <span class="tot-val" id="tot-${ki}-${pi}">–</span>
+          </div>`;
+        pg.appendChild(pc);
+      });
+    }
+
+    // Update calculated values (non-input elements only)
+    klan.spelare.forEach((p, pi) => {
+      // Update calc rows
+      const cgEl = document.getElementById(`calc-golf-${ki}-${pi}`);
+      if (cgEl) cgEl.innerHTML =
+        chip('SHcp', p._shcp) + chip('Golf', p._golf, true);
+
+      const cdEl = document.getElementById(`calc-dart-${ki}-${pi}`);
+      if (cdEl) cdEl.innerHTML =
+        chip('Dart pts', p._dpts !== null ? fmtN(p._dpts) : null, true);
+
+      const totEl = document.getElementById(`tot-${ki}-${pi}`);
+      if (totEl) {
+        totEl.textContent = p._tot !== null ? fmtN(p._tot) : '–';
+        totEl.style.color = p._tot !== null ? klan.color : '#ccc';
+        totEl.className = 'tot-val' + (p._tot === null ? ' empty' : '');
+      }
+
+      // Update input filled state (don't change value if focused)
+      ['hcp','slag','skytte','dart'].forEach(f => {
+        const el = document.getElementById(`inp-${ki}-${pi}-${f}`);
+        if (el && document.activeElement !== el) {
+          const raw = state.klaner[ki].spelare[pi][f];
+          el.value = raw !== null ? String(raw).replace('.', ',') : '';
+          el.classList.toggle('filled', raw !== null);
+        }
+      });
+      // Sync name (only if not focused)
+      const nEl = document.getElementById(`inp-${ki}-${pi}-namn`);
+      if (nEl && document.activeElement !== nEl) {
+        nEl.value = state.klaner[ki].spelare[pi].namn || '';
+      }
+    });
+
+    // Klan scramble section
+    let ks = card.querySelector('.klan-scramble');
+    if (!ks) {
+      ks = document.createElement('div');
+      ks.className = 'klan-scramble';
+      ks.innerHTML = `
+        <div class="scramble-input-group">
+          <label>Klan Slag (scramble)</label>
+          <input class="gc-input" type="text" inputmode="numeric"
+            id="klan-slag-${ki}" placeholder="ex. 69"
+            oninput="onKlanSlag(${ki},this)">
+        </div>
+        <div class="scramble-stats" id="klan-stats-${ki}"></div>`;
+      card.appendChild(ks);
+    }
+
+    // Update klan slag input
+    const ksEl = document.getElementById(`klan-slag-${ki}`);
+    if (ksEl && document.activeElement !== ksEl) {
+      const raw = state.klaner[ki].klan_slag;
+      ksEl.value = raw !== null ? String(raw) : '';
+      ksEl.classList.toggle('filled', raw !== null);
+    }
+
+    // Update klan stats
+    const statsEl = document.getElementById(`klan-stats-${ki}`);
+    if (statsEl) {
+      const ks2 = klan;
+      const totalStr = ks2._ktot !== null
+        ? `<div class="stat-pill total-pill"><span class="s-label">Total</span><span class="s-val">${fmtN(ks2._ktot)}</span></div>`
+        : `<div class="stat-pill total-pill"><span class="s-label">Total</span><span class="s-val">–</span></div>`;
+      statsEl.innerHTML =
+        `<div class="stat-pill"><span class="s-label">Klan HCP</span><span class="s-val">${ks2._khRaw !== null ? fmtN(ks2._khRaw) : '–'}</span></div>` +
+        `<div class="stat-pill"><span class="s-label">Slope</span><span class="s-val">${ks2._kslope !== null ? ks2._kslope : '–'}</span></div>` +
+        `<div class="stat-pill" title="Scramble golf poäng"><span class="s-label">Scramble</span><span class="s-val">${ks2._kgolfScramble !== null ? ks2._kgolfScramble : '–'}</span></div>` +
+        `<div class="stat-pill" title="Genomsnitt individuell golf"><span class="s-label">Snitt golf</span><span class="s-val">${ks2._indivGolfAvg !== null ? fmtN(ks2._indivGolfAvg) : '–'}</span></div>` +
+        `<div class="stat-pill" title="Scramble + Snitt golf"><span class="s-label">Golf tot</span><span class="s-val">${ks2._kgolf !== null ? fmtN(ks2._kgolf) : '–'}</span></div>` +
+        `<div class="stat-pill"><span class="s-label">Skytte</span><span class="s-val">${ks2._ksky !== null ? fmtN(ks2._ksky) : '–'}</span></div>` +
+        `<div class="stat-pill"><span class="s-label">Dart</span><span class="s-val">${ks2._kdart !== null ? fmtN(ks2._kdart) : '–'}</span></div>` +
+        totalStr;
+    }
+  });
+}
+
+function renderResults(d) {
+  // ── Singel ──
+  const allP = d.klaner.flatMap(klan =>
+    klan.spelare.map(p => ({ ...p, klanName: klan.name, klanColor: klan.color }))
+  ).filter(p => p._tot !== null).sort((a,b) => b._tot - a._tot);
+
+  const rankCls = ['gold','silver','bronze'];
+  const singelBody = document.getElementById('singel-body');
+  singelBody.innerHTML = allP.length === 0
+    ? `<tr><td colspan="6" style="text-align:center;color:#bbb;padding:24px;font-size:13px">Fyll i poäng ovan</td></tr>`
+    : allP.map((p, i) => `
+      <tr>
+        <td class="rank-num ${rankCls[i]||''}">${i+1}</td>
+        <td class="left name-cell">
+          <span class="klan-dot" style="background:${p.klanColor}"></span>${p.namn}
+        </td>
+        <td class="pts-cell">${p._golf ?? '–'}</td>
+        <td class="pts-cell">${p._sky ?? '–'}</td>
+        <td class="pts-cell">${p._dpts !== null ? fmtN(p._dpts) : '–'}</td>
+        <td class="total-cell">${fmtN(p._tot)}</td>
+      </tr>`).join('');
+
+  // ── Klan ──
+  const klaner = d.klaner.filter(k => k._ktot !== null).sort((a,b) => b._ktot - a._ktot);
+  const klanBody = document.getElementById('klan-body');
+  klanBody.innerHTML = klaner.length === 0
+    ? `<tr><td colspan="6" style="text-align:center;color:#bbb;padding:24px;font-size:13px">Fyll i poäng ovan</td></tr>`
+    : klaner.map((k, i) => `
+      <tr>
+        <td class="rank-num ${rankCls[i]||''}">${i+1}</td>
+        <td class="left name-cell" style="color:${k.color}">
+          <span class="klan-dot" style="background:${k.color}"></span>${k.name}
+        </td>
+        <td class="pts-cell">${k._kgolf ?? '–'}</td>
+        <td class="pts-cell">${k._ksky !== null ? fmtN(k._ksky) : '–'}</td>
+        <td class="pts-cell">${k._kdart !== null ? fmtN(k._kdart) : '–'}</td>
+        <td class="total-cell">${fmtN(k._ktot)}</td>
+      </tr>`).join('');
+}
+
+// ══════════════════════════════════════════════
+//  INPUT HANDLERS
+// ══════════════════════════════════════════════
+function onInput(ki, pi, field, el) {
+  const raw = el.value;
+  if (field === 'namn') {
+    state.klaner[ki].spelare[pi].namn = raw;
+    markUnsaved();
+    return; // no recalculation needed
+  }
+  const parsed = parseNum(raw.trim());
+  state.klaner[ki].spelare[pi][field] = parsed;
+  el.classList.toggle('filled', parsed !== null && raw.trim() !== '');
+  markUnsaved();
+  render();
+}
+
+function onKlanSlag(ki, el) {
+  const raw = el.value.trim();
+  const parsed = parseInt2(raw);
+  state.klaner[ki].klan_slag = parsed;
+  el.classList.toggle('filled', parsed !== null && raw !== '');
+  markUnsaved();
+  render();
+}
+
+function markUnsaved() {
+  unsaved = true;
+  document.getElementById('save-status').textContent = '● Osparade ändringar';
+}
+
+// ══════════════════════════════════════════════
+//  LOAD / SAVE
+// ══════════════════════════════════════════════
+async function loadData() {
+  const resp = await fetch('/api/data');
+  state = await resp.json();
+
+  document.getElementById('course-name-input').value = state.course.name || '';
+  document.getElementById('course-par-input').value  = state.course.par  || 72;
+  buildTabs();
+  updateSubtitle();
+  renderStartlista();
+
+  // Populate input values from state
+  render();
+
+  // After render, set input values from state (with comma)
+  state.klaner.forEach((klan, ki) => {
+    klan.spelare.forEach((p, pi) => {
+      const nEl = document.getElementById(`inp-${ki}-${pi}-namn`);
+      if (nEl) nEl.value = p.namn || '';
+
+      ['hcp','slag','skytte','dart'].forEach(f => {
+        const el = document.getElementById(`inp-${ki}-${pi}-${f}`);
+        if (el && p[f] !== null) {
+          el.value = String(p[f]).replace('.', ',');
+          el.classList.add('filled');
+        }
+      });
+    });
+    const ksEl = document.getElementById(`klan-slag-${ki}`);
+    if (ksEl && klan.klan_slag !== null) {
+      ksEl.value = String(klan.klan_slag);
+      ksEl.classList.add('filled');
+    }
+  });
+}
+
+async function saveData() {
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Sparar…';
+  try {
+    const resp = await fetch('/api/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state)
+    });
+    const res = await resp.json();
+    if (res.status === 'ok') {
+      showToast('✓ Sparat!');
+      unsaved = false;
+      document.getElementById('save-status').textContent = '';
+    } else {
+      showToast('Fel: ' + res.message, true);
+    }
+  } catch(e) {
+    showToast('Kunde inte spara – är servern igång?', true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Spara';
+  }
+}
+
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (err ? ' error' : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function updateSubtitle() {
+  document.getElementById('header-sub').textContent =
+    `${state.year || ''} · ${state.course.name || '–'} · Par ${state.course.par || '–'}`;
+}
+
+// Course inputs
+document.getElementById('course-name-input').addEventListener('input', e => {
+  state.course.name = e.target.value;
+  updateSubtitle();
+  markUnsaved();
+});
+document.getElementById('course-par-input').addEventListener('input', e => {
+  state.course.par = e.target.value;
+  updateSubtitle();
+  markUnsaved();
+  render();
+});
+
+document.getElementById('save-btn').addEventListener('click', saveData);
+
+window.addEventListener('beforeunload', e => {
+  if (unsaved) { e.preventDefault(); e.returnValue = ''; }
+});
+
+loadData();
+</script>
+</body>
+</html>

@@ -1,0 +1,358 @@
+{
+  "course": {
+    "name": "Eksjö GK",
+    "par": 72,
+    "slope_table": "eksjo_gk"
+  },
+  "history": [
+    {
+      "course": {
+        "name": "Eksjö GK",
+        "par": 72,
+        "slope_table": "eksjo_gk"
+      },
+      "kgolf_formula": "scramble_plus_snitt",
+      "klaner": [
+        {
+          "color": "#2e7d32",
+          "id": "selander",
+          "klan_slag": 69,
+          "name": "Klan Selander",
+          "spelare": [
+            {
+              "dart": 39,
+              "hcp": 12.1,
+              "namn": "David Selander",
+              "skytte": 12,
+              "slag": 94
+            },
+            {
+              "dart": 42,
+              "hcp": 14.7,
+              "namn": "Joacim Rustas",
+              "skytte": 17,
+              "slag": 105
+            },
+            {
+              "dart": 30,
+              "hcp": 19.1,
+              "namn": "Calle Norelius",
+              "skytte": 6,
+              "slag": 109
+            },
+            {
+              "dart": 40,
+              "hcp": 19.9,
+              "namn": "Anton Rydberg",
+              "skytte": 10,
+              "slag": 111
+            }
+          ]
+        },
+        {
+          "color": "#1565c0",
+          "id": "norrby",
+          "klan_slag": 65,
+          "name": "Klan Norrby",
+          "spelare": [
+            {
+              "dart": 42,
+              "hcp": 8,
+              "namn": "Mikael Nordin",
+              "skytte": 10,
+              "slag": 92
+            },
+            {
+              "dart": 42,
+              "hcp": 9.5,
+              "namn": "Magnus Norrby",
+              "skytte": 13,
+              "slag": 88
+            },
+            {
+              "dart": 43,
+              "hcp": 10.8,
+              "namn": "Christopher Eklund",
+              "skytte": 3,
+              "slag": 87
+            },
+            {
+              "dart": 43,
+              "hcp": 22.9,
+              "namn": "Jonas Cronfalk",
+              "skytte": 15,
+              "slag": 108
+            }
+          ]
+        },
+        {
+          "color": "#b71c1c",
+          "id": "lyrinder",
+          "klan_slag": 75,
+          "name": "Klan Lyrinder",
+          "spelare": [
+            {
+              "dart": 40,
+              "hcp": 17.7,
+              "namn": "Michael Möllerfält",
+              "skytte": 12,
+              "slag": 100
+            },
+            {
+              "dart": 40,
+              "hcp": 22.2,
+              "namn": "Sebastian Thurfjell",
+              "skytte": 4,
+              "slag": 104
+            },
+            {
+              "dart": 41,
+              "hcp": 23.8,
+              "namn": "Stefan Andersson",
+              "skytte": 4,
+              "slag": 109
+            },
+            {
+              "dart": 28,
+              "hcp": 24.4,
+              "namn": "Filip Lyrinder",
+              "skytte": 13,
+              "slag": 120
+            }
+          ]
+        }
+      ],
+      "year": 2025
+    },
+    {
+      "course": {
+        "name": "Eksjö GK",
+        "par": 72,
+        "slope_table": "eksjo_gk"
+      },
+      "kgolf_formula": "scramble",
+      "klaner": [
+        {
+          "color": "#2e7d32",
+          "id": "selander",
+          "klan_slag": 67,
+          "name": "Klan Selander",
+          "spelare": [
+            {
+              "dart": 40,
+              "hcp": 5.2,
+              "namn": "Andreas Milander",
+              "skytte": 6,
+              "slag": 84
+            },
+            {
+              "dart": 36,
+              "hcp": 10.3,
+              "namn": "David Selander",
+              "skytte": 11,
+              "slag": 103
+            },
+            {
+              "dart": 36,
+              "hcp": 17.1,
+              "namn": "Joacim Rustas",
+              "skytte": 16,
+              "slag": 88
+            },
+            {
+              "dart": 37,
+              "hcp": 21.3,
+              "namn": "Anton Rydberg",
+              "skytte": 7,
+              "slag": 93
+            }
+          ]
+        },
+        {
+          "color": "#1565c0",
+          "id": "norrby",
+          "klan_slag": 63,
+          "name": "Klan Norrby",
+          "spelare": [
+            {
+              "dart": 36,
+              "hcp": 8.2,
+              "namn": "Magnus Norrby",
+              "skytte": 12,
+              "slag": 84
+            },
+            {
+              "dart": 38,
+              "hcp": 9.3,
+              "namn": "Mikael Nordin",
+              "skytte": 10,
+              "slag": 85
+            },
+            {
+              "dart": 42,
+              "hcp": 9.4,
+              "namn": "Christopher Eklund",
+              "skytte": 8,
+              "slag": 91
+            },
+            {
+              "dart": 40,
+              "hcp": 21.4,
+              "namn": "Jonas Cronfalk",
+              "skytte": 15,
+              "slag": 105
+            }
+          ]
+        },
+        {
+          "color": "#b71c1c",
+          "id": "lyrinder",
+          "klan_slag": 67,
+          "name": "Klan Lyrinder",
+          "spelare": [
+            {
+              "dart": 31,
+              "hcp": 10.4,
+              "namn": "Kristian Henriksson",
+              "skytte": 6,
+              "slag": 89
+            },
+            {
+              "dart": 39,
+              "hcp": 17.7,
+              "namn": "Michael Möllerfält",
+              "skytte": 10,
+              "slag": 103
+            },
+            {
+              "dart": 30,
+              "hcp": 23.8,
+              "namn": "Stefan Andersson",
+              "skytte": 6,
+              "slag": 112
+            },
+            {
+              "dart": 37,
+              "hcp": 25.4,
+              "namn": "Filip Lyrinder",
+              "skytte": 16,
+              "slag": 107
+            }
+          ]
+        }
+      ],
+      "year": 2024
+    }
+  ],
+  "klaner": [
+    {
+      "color": "#2e7d32",
+      "id": "selander",
+      "klan_slag": 64,
+      "name": "Klan Selander",
+      "spelare": [
+        {
+          "dart": 50,
+          "hcp": 15.2,
+          "namn": "David Selander",
+          "skytte": 10,
+          "slag": 89
+        },
+        {
+          "dart": 50,
+          "hcp": 14.6,
+          "namn": "Joacim Rustas",
+          "skytte": 10,
+          "slag": 88
+        },
+        {
+          "dart": 50,
+          "hcp": 7.6,
+          "namn": "Andreas Milander",
+          "skytte": 10,
+          "slag": 80
+        },
+        {
+          "dart": 50,
+          "hcp": 19.7,
+          "namn": "Anton Rydberg",
+          "skytte": 10,
+          "slag": 94
+        }
+      ]
+    },
+    {
+      "color": "#1565c0",
+      "id": "norrby",
+      "klan_slag": 65,
+      "name": "Klan Norrby",
+      "spelare": [
+        {
+          "dart": 50,
+          "hcp": 18.8,
+          "namn": "Calle Norlelius",
+          "skytte": 10,
+          "slag": 93
+        },
+        {
+          "dart": 50,
+          "hcp": 10,
+          "namn": "Magnus Norrby",
+          "skytte": 10,
+          "slag": 82
+        },
+        {
+          "dart": 50,
+          "hcp": 10.9,
+          "namn": "Christopher Eklund",
+          "skytte": 10,
+          "slag": 84
+        },
+        {
+          "dart": 50,
+          "hcp": 22.6,
+          "namn": "Jonas Cronfalk",
+          "skytte": 10,
+          "slag": 97
+        }
+      ]
+    },
+    {
+      "color": "#b71c1c",
+      "id": "lyrinder",
+      "klan_slag": 69,
+      "name": "Klan Lyrinder",
+      "spelare": [
+        {
+          "dart": 50,
+          "hcp": 18.3,
+          "namn": "Michael Möllerfält",
+          "skytte": 10,
+          "slag": 92
+        },
+        {
+          "dart": 50,
+          "hcp": 22.5,
+          "namn": "Sebastian Thurfjell",
+          "skytte": 10,
+          "slag": 97
+        },
+        {
+          "dart": 50,
+          "hcp": 23.8,
+          "namn": "Stefan Andersson",
+          "skytte": 10,
+          "slag": 98
+        },
+        {
+          "dart": 50,
+          "hcp": 25,
+          "namn": "Filip Lyrinder",
+          "skytte": 10,
+          "slag": 100
+        }
+      ]
+    }
+  ],
+  "year": 2026
+}

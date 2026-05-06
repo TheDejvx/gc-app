@@ -2606,6 +2606,9 @@ function toggleLock() {
 }
 
 function newYear() {
+  const pw = prompt('Ange lösenord för att skapa nytt år:');
+  if (pw === null) return;
+  if (pw !== 'storsnopp1') { alert('Fel lösenord.'); return; }
   const next = (state.year || 2026) + 1;
   if (!confirm(`Skapa ny säsong ${next}?\n\nNuvarande år (${state.year}) arkiveras i historiken men förblir olåst så att du kan fortsätta redigera det.\nAlla poäng och matcher nollställs för ${next}.`)) return;
 

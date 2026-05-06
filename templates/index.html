@@ -696,7 +696,8 @@
       gap: 8px; align-items: center; margin-bottom: 10px;
     }
     .scramble-round-row:last-child { margin-bottom: 0; }
-    .scramble-round-label { font-size: 12px; font-weight: 700; color: #888; }
+    .scramble-round-label { font-size: 12px; font-weight: 700; color: #888; display: flex; flex-direction: column; gap: 2px; }
+    .scramble-round-hcp { font-size: 10px; font-weight: 500; color: #aaa; }
     .scramble-vs-lbl { text-align: center; font-size: 11px; color: #ccc; font-weight: 700; }
     .scramble-score-inp {
       width: 100%; padding: 9px 6px; font-size: 17px; font-weight: 700;
@@ -744,6 +745,32 @@
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     .toast.error { background: #c62828; }
+    /* ── Mat och Dryck ── */
+    .md-section { background: white; border-radius: 14px; padding: 18px 16px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+    .md-heading { font-size: 16px; font-weight: 900; color: #1a2e1a; margin-bottom: 12px; }
+    .md-flak-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; margin-bottom: 10px; }
+    .md-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .md-table th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #888; padding: 4px 6px 8px; }
+    .md-table td { padding: 5px 6px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
+    .md-table tfoot td { border-top: 2px solid #eee; border-bottom: none; }
+    .md-total-row td { font-weight: 800; color: #333; padding-top: 8px; }
+    .md-summa { font-weight: 700; color: #2e7d32; white-space: nowrap; }
+    .md-inp { border: 1.5px solid #e0e0e0; border-radius: 7px; padding: 5px 8px; font-size: 13px; font-family: inherit; background: #fafafa; width: 100%; }
+    .md-inp.num { width: 70px; text-align: right; }
+    .md-inp:focus { outline: none; border-color: #66bb6a; background: white; }
+    .md-del-btn { background: none; border: none; color: #ccc; font-size: 14px; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+    .md-del-btn:hover { color: #e53935; background: #fff0f0; }
+    .md-add-btn { margin-top: 10px; background: #f5f5f5; border: 1.5px dashed #ccc; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 700; color: #888; cursor: pointer; width: 100%; }
+    .md-add-btn:hover { background: #e8f5e9; border-color: #66bb6a; color: #2e7d32; }
+    .md-summary-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }
+    .md-sum-lbl { font-size: 13px; font-weight: 700; color: #666; }
+    .md-sum-val { font-size: 22px; font-weight: 900; color: #2e7d32; }
+    .mat-list { display: flex; flex-direction: column; gap: 6px; }
+    .mat-row { display: flex; align-items: center; gap: 8px; }
+    .mat-check { width: 18px; height: 18px; flex-shrink: 0; cursor: pointer; accent-color: #2e7d32; }
+    .mat-vara { flex: 1; }
+    .mat-antal { width: 80px; }
+    .mat-vara.klar { text-decoration: line-through; color: #bbb; }
   </style>
 </head>
 <body>
@@ -841,6 +868,9 @@
 
   <!-- ── GC1 Scramble ── -->
   <div id="sub-view-scramble" style="display:none"><div id="scramble-section-tab"></div></div>
+
+  <!-- ── Mat och Dryck ── -->
+  <div id="sub-view-mat" style="display:none"></div>
 </div>
 
 <div id="view-history" style="display:none">
@@ -876,16 +906,21 @@ function nassjoSpelHcp(hcpIdx) {
   return Math.round(hcpIdx * (NASSJO_GK.slope / 113) + (NASSJO_GK.cr - NASSJO_GK.par));
 }
 
-// SGF 2-man scramble 9h team HCP
-// Nässjö SI: back 9 has odd SIs (1,3,5…17), front 9 has even SIs (2,4,6…18)
-// → back gets ceil(H/2) strokes, front gets floor(H/2)
+// SGF 2-man scramble team HCP
+// Formula: lo_raw × 0.35 + hi_raw × 0.15 = team HCP index → convert via slope
+// Nässjö SI: back 9 odd SIs → ceil(H/2), front 9 even SIs → floor(H/2)
+function scrambleTeamHcpObj(hcpA, hcpB) {
+  if (hcpA === null || hcpB === null) return null;
+  const lo = Math.min(hcpA, hcpB), hi = Math.max(hcpA, hcpB);
+  const h18 = nassjoSpelHcp(lo * 0.35 + hi * 0.15);
+  if (h18 === null) return null;
+  return { h18, front: Math.floor(h18 / 2), back: Math.ceil(h18 / 2) };
+}
+
 function scrambleTeamHcp9(hcpA, hcpB, roundNum) {
-  const h18a = nassjoSpelHcp(hcpA), h18b = nassjoSpelHcp(hcpB);
-  if (h18a === null || h18b === null) return null;
-  const toNine = h => roundNum === 2 ? Math.ceil(h / 2) : Math.floor(h / 2);
-  const lo = Math.min(toNine(h18a), toNine(h18b));
-  const hi = Math.max(toNine(h18a), toNine(h18b));
-  return Math.round(lo * 0.5 + hi * 0.2);
+  const obj = scrambleTeamHcpObj(hcpA, hcpB);
+  if (!obj) return null;
+  return roundNum === 2 ? obj.back : obj.front;
 }
 
 function scrambleRoundResult(scoreA, scoreB, hcpA, hcpB) {
@@ -1111,6 +1146,7 @@ function buildSubTabs() {
     { id: 'skytte',      label: '🔫 Skytte' },
     { id: 'dart',        label: '🎯 Dart' },
     { id: 'scramble',    label: '⛳ 2v2 Scramble' },
+    { id: 'mat',         label: '🍽️ Mat och Dryck' },
   ];
   bar.innerHTML = tabs.map(t =>
     `<button class="subtab-btn${t.id === activeSubTab ? ' active' : ''}"
@@ -1122,7 +1158,7 @@ function switchSubTab(tab) {
   activeSubTab = tab;
   document.querySelectorAll('.subtab-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.subtab === tab));
-  ['oversikt','golf','scramble4','skytte','dart','scramble'].forEach(t => {
+  ['oversikt','golf','scramble4','skytte','dart','scramble','mat'].forEach(t => {
     const el = document.getElementById(`sub-view-${t}`);
     if (el) el.style.display = t === tab ? '' : 'none';
   });
@@ -1220,24 +1256,19 @@ function renderSkyteOrdning(d) {
 
   const withGolf    = all.filter(p => p._golf !== null).sort((a, b) => b._golf - a._golf);
   const withoutGolf = all.filter(p => p._golf === null);
-
-  if (withGolf.length === 0) { el.innerHTML = ''; return; }
+  const ordered = [...withGolf, ...withoutGolf];
 
   const rankCls = ['gold','silver','bronze'];
-  const ordered = [...withGolf, ...withoutGolf];
 
   const rows = ordered.map((p, i) => {
     const hasScore = p._golf !== null;
     const posCls = hasScore ? (rankCls[i] || '') : '';
-    const vapenIdx = hasScore ? i % SKYTTE_VAPEN.length : -1;
-    const vapenHtml = vapenIdx >= 0
-      ? `<span class="skytte-vapen v${vapenIdx}">${SKYTTE_VAPEN[vapenIdx]}</span>`
-      : '';
+    const vapenIdx = i % SKYTTE_VAPEN.length;
     return `<div class="skytte-player${hasScore ? '' : ' no-score'}">
       <span class="skytte-pos ${posCls}">${i + 1}</span>
       <span class="klan-dot" style="background:${p.klanColor}"></span>
       <span class="skytte-name">${p.namn}</span>
-      ${vapenHtml}
+      <span class="skytte-vapen v${vapenIdx}">${SKYTTE_VAPEN[vapenIdx]}</span>
       <span class="skytte-golf">${hasScore ? p._golf + ' pts' : '–'}</span>
     </div>`;
   }).join('');
@@ -1398,6 +1429,8 @@ function render() {
     renderFyrMannScrambleTab(d);
   } else if (activeSubTab === 'scramble') {
     renderScramble(d, 'scramble-section-tab');
+  } else if (activeSubTab === 'mat') {
+    renderMatOchDryck();
   }
 }
 
@@ -1693,11 +1726,12 @@ function renderSkytteTab(d) {
   }));
   const withGolf    = allPlayers.filter(p => p._golf !== null).sort((a,b) => b._golf - a._golf);
   const withoutGolf = allPlayers.filter(p => p._golf === null);
-  withGolf.forEach((p, i) => { p._shootPos = i; });
+  const orderedPlayers = [...withGolf, ...withoutGolf];
+  orderedPlayers.forEach((p, i) => { p._shootPos = i; });
 
   // Build 4 round cards — weapon rotates each round
   const roundCards = Array.from({ length: SKYTTE_NUM_ROUNDS }, (_, ri) => {
-    const rows = withGolf.map(p => {
+    const rows = orderedPlayers.map(p => {
       const vapenIdx = (p._shootPos + ri) % SKYTTE_VAPEN.length;
       const rounds   = state.klaner[p.ki].spelare[p.pi].skytte_rounds || [null,null,null,null];
       const val      = rounds[ri] !== null && rounds[ri] !== undefined ? rounds[ri] : '';
@@ -1719,11 +1753,11 @@ function renderSkytteTab(d) {
       </tr>`;
     }).join('');
 
-    const roundTotal = withGolf.reduce((sum, p) => {
+    const roundTotal = orderedPlayers.reduce((sum, p) => {
       const v = (state.klaner[p.ki].spelare[p.pi].skytte_rounds || [])[ri];
       return v !== null && v !== undefined ? sum + parseInt2(String(v)) : sum;
     }, 0);
-    const hasAny = withGolf.some(p => {
+    const hasAny = orderedPlayers.some(p => {
       const v = (state.klaner[p.ki].spelare[p.pi].skytte_rounds || [])[ri];
       return v !== null && v !== undefined;
     });
@@ -2014,17 +2048,19 @@ function renderScrambleReadonly(d, targetId) {
     const pB = match.playersB || [null, null];
     const hcpA = [getHcp(kA, pA[0]), getHcp(kA, pA[1])];
     const hcpB = [getHcp(kB, pB[0]), getHcp(kB, pB[1])];
-    const teamHcpA = (hcpA[0] !== null && hcpA[1] !== null) ? scrambleTeamHcp9(hcpA[0], hcpA[1]) : null;
-    const teamHcpB = (hcpB[0] !== null && hcpB[1] !== null) ? scrambleTeamHcp9(hcpB[0], hcpB[1]) : null;
+    const teamHcpA = (hcpA[0] !== null && hcpA[1] !== null) ? scrambleTeamHcpObj(hcpA[0], hcpA[1]) : null;
+    const teamHcpB = (hcpB[0] !== null && hcpB[1] !== null) ? scrambleTeamHcpObj(hcpB[0], hcpB[1]) : null;
 
     const rounds = match.rounds || [{scoreA:null,scoreB:null},{scoreA:null,scoreB:null}];
-    const results = rounds.map(r =>
-      scrambleRoundResult(parseInt2(r.scoreA), parseInt2(r.scoreB), teamHcpA, teamHcpB));
+    const results = rounds.map((r, ri) =>
+      scrambleRoundResult(parseInt2(r.scoreA), parseInt2(r.scoreB),
+        ri === 0 ? teamHcpA?.front : teamHcpA?.back,
+        ri === 0 ? teamHcpB?.front : teamHcpB?.back));
     const hasAny = results.some(r => r.ptsA !== null);
     const totA = results.reduce((s, r) => r.ptsA !== null ? s + r.ptsA : s, 0);
     const totB = results.reduce((s, r) => r.ptsB !== null ? s + r.ptsB : s, 0);
 
-    const teamHtml = (klan, players, teamHcp) => `
+    const teamHtml = (klan, players, hcpObj) => `
       <div class="scramble-team">
         <div class="scramble-team-heading">
           <span class="klan-dot" style="background:${klan.color}"></span>${klan.name}
@@ -2034,16 +2070,17 @@ function renderScrambleReadonly(d, targetId) {
             ${n || `Spelare ${i+1} ej vald`}
           </div>`).join('')}
         <div class="team-hcp-row">
-          <span class="hcp-lbl">Team HCP (9h)</span>
-          <span class="hcp-val">${teamHcp !== null ? fmtN(teamHcp, 1) : '–'}</span>
+          <span class="hcp-lbl">Team HCP</span>
+          <span class="hcp-val">Ut: ${hcpObj ? hcpObj.front : '–'} · In: ${hcpObj ? hcpObj.back : '–'}</span>
         </div>
       </div>`;
 
     const roundsHtml = rounds.map((r, ri) => {
       const res = results[ri];
+      const hcpLabel = ri === 0 ? `HCP: ${teamHcpA?.front ?? '–'} vs ${teamHcpB?.front ?? '–'}` : `HCP: ${teamHcpA?.back ?? '–'} vs ${teamHcpB?.back ?? '–'}`;
       return `
         <div class="scramble-round-row">
-          <span class="scramble-round-label">Runda ${ri + 1}</span>
+          <span class="scramble-round-label">R${ri + 1} (${ri === 0 ? 'Ut' : 'In'})<span class="scramble-round-hcp">${hcpLabel}</span></span>
           <span style="text-align:center;font-size:17px;font-weight:700;color:${r.scoreA !== null ? '#333' : '#ccc'}">${r.scoreA ?? '–'}</span>
           <span class="scramble-vs-lbl">vs</span>
           <span style="text-align:center;font-size:17px;font-weight:700;color:${r.scoreB !== null ? '#333' : '#ccc'}">${r.scoreB ?? '–'}</span>
@@ -2122,27 +2159,28 @@ function renderScramble(d, targetId) {
     return `<span class="pts-chip ${cls}">${fmtN(pts, 1)}</span>`;
   }
 
-  function teamBlock(klan, players, teamHcp, side, mi) {
+  function teamBlock(klan, players, teamHcpObj, side, mi) {
     const hcps = players.map(n => getHcp(klan, n));
     const used = usedByKlan[klan.id] || new Set();
 
     const slots = [0, 1].map(slot => {
       const sel = players[slot] || '';
       const hcp = hcps[slot];
-      const shcp = nassjoSpelHcp(hcp);
       const selOpts = `<option value="">– Välj spelare –</option>` +
         klan.spelare
           .filter(p => p.namn === sel || !used.has(p.namn))
-          .map(p => `<option value="${p.namn}"${p.namn === sel ? ' selected' : ''}>${p.namn}</option>`)
+          .map(p => `<option value="${p.namn}"${p.namn === sel ? ' selected' : ''}>${p.namn}${p.hcp ? ' ('+p.hcp+')' : ''}</option>`)
           .join('');
       return `
         <div class="scramble-player-slot">
           <label>Spelare ${slot + 1}</label>
           <select id="sc-sel-${mi}-${side}-${slot}" class="scramble-select${sel ? ' filled' : ''}"
             onchange="onScramblePlayer(${mi},'${side}',${slot},this.value)">${selOpts}</select>
-          ${shcp !== null ? `<div class="scramble-shcp-hint">SHcp (Nässjö): ${shcp}</div>` : ''}
         </div>`;
     }).join('');
+
+    const frontVal = teamHcpObj ? teamHcpObj.front : null;
+    const backVal  = teamHcpObj ? teamHcpObj.back  : null;
 
     return `
       <div class="scramble-team">
@@ -2151,8 +2189,8 @@ function renderScramble(d, targetId) {
         </div>
         ${slots}
         <div class="team-hcp-row">
-          <span class="hcp-lbl">Team HCP (9h)</span>
-          <span class="hcp-val">${teamHcp !== null ? fmtN(teamHcp, 1) : '–'}</span>
+          <span class="hcp-lbl">Team HCP</span>
+          <span class="hcp-val">Ut: ${frontVal !== null ? frontVal : '–'} · In: ${backVal !== null ? backVal : '–'}</span>
         </div>
       </div>`;
   }
@@ -2165,12 +2203,14 @@ function renderScramble(d, targetId) {
     const pB = match.playersB || [null, null];
     const hcpA = [getHcp(kA, pA[0]), getHcp(kA, pA[1])];
     const hcpB = [getHcp(kB, pB[0]), getHcp(kB, pB[1])];
-    const teamHcpA = (hcpA[0] !== null && hcpA[1] !== null) ? scrambleTeamHcp9(hcpA[0], hcpA[1]) : null;
-    const teamHcpB = (hcpB[0] !== null && hcpB[1] !== null) ? scrambleTeamHcp9(hcpB[0], hcpB[1]) : null;
+    const teamHcpA = (hcpA[0] !== null && hcpA[1] !== null) ? scrambleTeamHcpObj(hcpA[0], hcpA[1]) : null;
+    const teamHcpB = (hcpB[0] !== null && hcpB[1] !== null) ? scrambleTeamHcpObj(hcpB[0], hcpB[1]) : null;
 
     const rounds = match.rounds || [{scoreA:null,scoreB:null},{scoreA:null,scoreB:null}];
-    const results = rounds.map(r =>
-      scrambleRoundResult(parseInt2(r.scoreA), parseInt2(r.scoreB), teamHcpA, teamHcpB));
+    const results = rounds.map((r, ri) =>
+      scrambleRoundResult(parseInt2(r.scoreA), parseInt2(r.scoreB),
+        ri === 0 ? teamHcpA?.front : teamHcpA?.back,
+        ri === 0 ? teamHcpB?.front : teamHcpB?.back));
 
     const hasAny = results.some(r => r.ptsA !== null);
     const totA = results.reduce((s, r) => r.ptsA !== null ? s + r.ptsA : s, 0);
@@ -2180,9 +2220,10 @@ function renderScramble(d, targetId) {
       const res = results[ri];
       const vA = r.scoreA !== null ? r.scoreA : '';
       const vB = r.scoreB !== null ? r.scoreB : '';
+      const hcpLabel = ri === 0 ? `HCP: ${teamHcpA?.front ?? '–'} vs ${teamHcpB?.front ?? '–'}` : `HCP: ${teamHcpA?.back ?? '–'} vs ${teamHcpB?.back ?? '–'}`;
       return `
         <div class="scramble-round-row">
-          <span class="scramble-round-label">Runda ${ri + 1}</span>
+          <span class="scramble-round-label">R${ri + 1} (${ri === 0 ? 'Ut' : 'In'})<span class="scramble-round-hcp">${hcpLabel}</span></span>
           <input id="sc-score-${mi}-${ri}-A" class="scramble-score-inp${r.scoreA !== null ? ' filled' : ''}"
             type="text" inputmode="numeric" value="${vA}" placeholder="Slag"
             oninput="onScrambleScore(${mi},${ri},'A',this)">
@@ -2276,6 +2317,131 @@ function onInput(ki, pi, field, el) {
   render();
 }
 
+// ══════════════════════════════════════════════
+//  MAT OCH DRYCK
+// ══════════════════════════════════════════════
+function renderMatOchDryck() {
+  const el = document.getElementById('sub-view-mat');
+  if (!el) return;
+  const md = state.mat_och_dryck;
+  if (!md) { el.innerHTML = '<p style="padding:24px;color:#888">Ingen data.</p>'; return; }
+
+  const flakSz = md.dryck?.flak_storlek || 24;
+  const ol = md.dryck?.ol || [];
+  const ovrigt = md.dryck?.ovrigt || [];
+  const mat = md.mat || [];
+
+  const olTotalFlak = ol.reduce((s, r) => s + (parseNum(r.antal_flak) || 0), 0);
+  const olTotalKr   = ol.reduce((s, r) => s + (parseNum(r.pris) || 0) * (parseNum(r.antal_flak) || 0) * flakSz, 0);
+  const ovTotalAnt  = ovrigt.reduce((s, r) => s + (parseNum(r.antal) || 0), 0);
+  const ovTotalKr   = ovrigt.reduce((s, r) => s + (parseNum(r.pris) || 0) * (parseNum(r.antal) || 0), 0);
+
+  const olRows = ol.map((r, i) => {
+    const summa = (parseNum(r.pris) || 0) * (parseNum(r.antal_flak) || 0) * flakSz;
+    return `<tr>
+      <td><input class="md-inp" value="${r.namn}" oninput="onMdField('ol',${i},'namn',this.value)"></td>
+      <td><input class="md-inp num" value="${r.pris}" oninput="onMdField('ol',${i},'pris',this.value)"></td>
+      <td><input class="md-inp num" value="${r.antal_flak}" oninput="onMdField('ol',${i},'antal_flak',this.value)"></td>
+      <td class="md-summa">${fmtN(summa, 1)}</td>
+      <td><button class="md-del-btn" onclick="onMdDel('ol',${i})">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  const ovRows = ovrigt.map((r, i) => {
+    const summa = (parseNum(r.pris) || 0) * (parseNum(r.antal) || 0);
+    return `<tr>
+      <td><input class="md-inp" value="${r.namn}" oninput="onMdField('ovrigt',${i},'namn',this.value)"></td>
+      <td><input class="md-inp num" value="${r.pris}" oninput="onMdField('ovrigt',${i},'pris',this.value)"></td>
+      <td><input class="md-inp num" value="${r.antal}" oninput="onMdField('ovrigt',${i},'antal',this.value)"></td>
+      <td class="md-summa">${fmtN(summa, 1)}</td>
+      <td><button class="md-del-btn" onclick="onMdDel('ovrigt',${i})">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  const matRows = mat.map((r, i) => `
+    <div class="mat-row">
+      <input type="checkbox" class="mat-check" ${r.klar ? 'checked' : ''} onchange="onMatKlar(${i},this.checked)">
+      <input class="md-inp mat-vara${r.klar ? ' klar' : ''}" value="${r.vara}" oninput="onMdMatField(${i},'vara',this.value)">
+      <input class="md-inp num mat-antal" value="${r.antal}" placeholder="Antal" oninput="onMdMatField(${i},'antal',this.value)">
+      <button class="md-del-btn" onclick="onMatDel(${i})">✕</button>
+    </div>`).join('');
+
+  withFocus(() => { el.innerHTML = `
+    <main class="tab-main">
+      <section class="md-section">
+        <h2 class="md-heading">🍺 Öl GC</h2>
+        <div class="md-flak-row">
+          <span class="md-flak-lbl">Flak =</span>
+          <input class="md-inp num" style="width:60px" value="${flakSz}" oninput="onMdFlakSz(this.value)"> burkar
+        </div>
+        <table class="md-table">
+          <thead><tr><th>Namn</th><th>Pris/burk</th><th>Antal flak</th><th>Summa</th><th></th></tr></thead>
+          <tbody>${olRows}</tbody>
+          <tfoot><tr class="md-total-row"><td colspan="2">Totalt</td><td>${olTotalFlak} flak</td><td>${fmtN(olTotalKr, 1)} kr</td><td></td></tr></tfoot>
+        </table>
+        <button class="md-add-btn" onclick="onMdAdd('ol')">+ Lägg till öl</button>
+      </section>
+
+      <section class="md-section">
+        <h2 class="md-heading">🍷 Övrigt</h2>
+        <table class="md-table">
+          <thead><tr><th>Namn</th><th>Pris/flaska</th><th>Antal</th><th>Summa</th><th></th></tr></thead>
+          <tbody>${ovRows}</tbody>
+          <tfoot><tr class="md-total-row"><td colspan="2">Totalt</td><td>${ovTotalAnt} flaskor</td><td>${fmtN(ovTotalKr, 1)} kr</td><td></td></tr></tfoot>
+        </table>
+        <button class="md-add-btn" onclick="onMdAdd('ovrigt')">+ Lägg till dryck</button>
+      </section>
+
+      <section class="md-section md-summary-row">
+        <span class="md-sum-lbl">Totalt alkohol</span>
+        <span class="md-sum-val">${fmtN(olTotalKr + ovTotalKr, 1)} kr</span>
+      </section>
+
+      <section class="md-section">
+        <h2 class="md-heading">🛒 Mat – Inköpslista</h2>
+        <div class="mat-list">${matRows}</div>
+        <button class="md-add-btn" onclick="onMatAdd()">+ Lägg till vara</button>
+      </section>
+    </main>`; });
+}
+
+function onMdFlakSz(val) {
+  if (!state.mat_och_dryck?.dryck) return;
+  state.mat_och_dryck.dryck.flak_storlek = parseInt2(val) || 24;
+  markUnsaved(); render();
+}
+function onMdField(list, idx, field, val) {
+  const arr = list === 'ol' ? state.mat_och_dryck.dryck.ol : state.mat_och_dryck.dryck.ovrigt;
+  arr[idx][field] = field === 'namn' ? val : (parseNum(val) ?? val);
+  markUnsaved(); render();
+}
+function onMdDel(list, idx) {
+  const arr = list === 'ol' ? state.mat_och_dryck.dryck.ol : state.mat_och_dryck.dryck.ovrigt;
+  arr.splice(idx, 1);
+  markUnsaved(); render();
+}
+function onMdAdd(list) {
+  if (list === 'ol') state.mat_och_dryck.dryck.ol.push({ namn: '', pris: 0, antal_flak: 1 });
+  else state.mat_och_dryck.dryck.ovrigt.push({ namn: '', pris: 0, antal: 1 });
+  markUnsaved(); render();
+}
+function onMdMatField(idx, field, val) {
+  state.mat_och_dryck.mat[idx][field] = val;
+  markUnsaved(); render();
+}
+function onMatKlar(idx, val) {
+  state.mat_och_dryck.mat[idx].klar = val;
+  markUnsaved(); render();
+}
+function onMatDel(idx) {
+  state.mat_och_dryck.mat.splice(idx, 1);
+  markUnsaved(); render();
+}
+function onMatAdd() {
+  state.mat_och_dryck.mat.push({ vara: '', antal: '', klar: false });
+  markUnsaved(); render();
+}
+
 function onKlan4ManScramble(ki, el) {
   const raw = el.value.trim();
   const gross = parseInt2(raw);
@@ -2329,6 +2495,12 @@ async function loadData() {
         if (!p.skytte_rounds) p.skytte_rounds = [null, null, null, null];
       });
     });
+  }
+  if (!state.mat_och_dryck) {
+    state.mat_och_dryck = {
+      dryck: { flak_storlek: 24, ol: [], ovrigt: [] },
+      mat: []
+    };
   }
 
   document.getElementById('course-name-input').value = state.course.name || '';

@@ -1208,36 +1208,45 @@ function renderSkyteOrdning(d) {
 
 function renderResultsHtml(klaner) {
   const rankCls = ['gold','silver','bronze'];
-  const allP = klaner.flatMap(klan =>
+  const allPRaw2 = klaner.flatMap(klan =>
     klan.spelare.map(p => ({ ...p, klanColor: klan.color }))
-  ).filter(p => p._tot !== null).sort((a,b) => b._tot - a._tot);
+  );
+  const allP = [
+    ...allPRaw2.filter(p => p._tot !== null).sort((a,b) => b._tot - a._tot),
+    ...allPRaw2.filter(p => p._tot === null),
+  ];
 
-  const singelRows = allP.length === 0
-    ? `<tr><td colspan="6" style="text-align:center;color:#bbb;padding:24px;font-size:13px">Inga data</td></tr>`
-    : allP.map((p, i) => `
+  const singelRows = allP.map((p, i) => {
+    const hasScore = p._tot !== null;
+    return `
       <tr>
-        <td class="rank-num ${rankCls[i]||''}">${i+1}</td>
+        <td class="rank-num ${hasScore ? (rankCls[i]||'') : ''}">${hasScore ? i+1 : '–'}</td>
         <td class="left name-cell"><span class="klan-dot" style="background:${p.klanColor}"></span>${p.namn}</td>
         <td class="pts-cell">${p._golf ?? '–'}</td>
         <td class="pts-cell">${p._sky ?? '–'}</td>
         <td class="pts-cell">${p._dpts !== null ? fmtN(p._dpts) : '–'}</td>
-        <td class="total-cell">${fmtN(p._tot)}</td>
-      </tr>`).join('');
+        <td class="total-cell">${p._tot !== null ? fmtN(p._tot) : '–'}</td>
+      </tr>`;
+  }).join('');
 
-  const sortedK = klaner.filter(k => k._ktot !== null).sort((a,b) => b._ktot - a._ktot);
+  const sortedK = [
+    ...klaner.filter(k => k._ktot !== null).sort((a,b) => b._ktot - a._ktot),
+    ...klaner.filter(k => k._ktot === null),
+  ];
   const showSCol = sortedK.some(k => (k._scramblePts || 0) > 0);
-  const klanRows = sortedK.length === 0
-    ? `<tr><td colspan="${showSCol ? 7 : 6}" style="text-align:center;color:#bbb;padding:24px;font-size:13px">Inga data</td></tr>`
-    : sortedK.map((k, i) => `
+  const klanRows = sortedK.map((k, i) => {
+    const hasScore = k._ktot !== null;
+    return `
       <tr>
-        <td class="rank-num ${rankCls[i]||''}">${i+1}</td>
+        <td class="rank-num ${hasScore ? (rankCls[i]||'') : ''}">${hasScore ? i+1 : '–'}</td>
         <td class="left name-cell" style="color:${k.color}"><span class="klan-dot" style="background:${k.color}"></span>${k.name}</td>
         <td class="pts-cell">${k._kgolf !== null ? fmtN(k._kgolf) : '–'}</td>
         <td class="pts-cell">${k._ksky !== null ? fmtN(k._ksky) : '–'}</td>
         <td class="pts-cell">${k._kdart !== null ? fmtN(k._kdart) : '–'}</td>
         ${showSCol ? `<td class="pts-cell">${k._scramblePts > 0 ? fmtN(k._scramblePts, 1) : '–'}</td>` : ''}
-        <td class="total-cell">${fmtN(k._ktot)}</td>
-      </tr>`).join('');
+        <td class="total-cell">${k._ktot !== null ? fmtN(k._ktot) : '–'}</td>
+      </tr>`;
+  }).join('');
 
   return `
     <div class="results-grid">
@@ -1694,17 +1703,20 @@ function renderSkytteTab(d) {
     </div>`;
 
   // Mini leaderboard
-  const ranked = [...withGolf, ...withoutGolf]
-    .filter(p => p._sky !== null)
-    .sort((a,b) => b._sky - a._sky);
+  const allSkytte = [...withGolf, ...withoutGolf];
+  const ranked = [
+    ...allSkytte.filter(p => p._sky !== null).sort((a,b) => b._sky - a._sky),
+    ...allSkytte.filter(p => p._sky === null),
+  ];
   const rankCls = ['gold','silver','bronze'];
-  const lbRows = ranked.length === 0
-    ? `<tr><td colspan="3" style="text-align:center;color:#bbb;padding:16px;font-size:13px">Inga skytte-resultat ännu</td></tr>`
-    : ranked.map((p,i) => `<tr>
-        <td class="rank-num ${rankCls[i]||''}">${i+1}</td>
+  const lbRows = ranked.map((p,i) => {
+    const hasScore = p._sky !== null;
+    return `<tr>
+        <td class="rank-num ${hasScore ? (rankCls[i]||'') : ''}">${hasScore ? i+1 : '–'}</td>
         <td class="left name-cell"><span class="klan-dot" style="background:${p.klanColor}"></span>${p.namn}</td>
-        <td class="total-cell">${p._sky} pts</td>
-      </tr>`).join('');
+        <td class="total-cell">${hasScore ? p._sky + ' pts' : '–'}</td>
+      </tr>`;
+  }).join('');
 
   withFocus(() => {
     el.innerHTML = `
@@ -1771,26 +1783,31 @@ function sportLeaderboardHtml(d, sport) {
   const allP = d.klaner.flatMap(klan =>
     klan.spelare.map(p => ({ ...p, klanColor: klan.color }))
   );
-  let sorted, label, valFn;
+  let scoreFn, label, valFn;
   if (sport === 'golf') {
-    sorted = allP.filter(p => p._golf !== null).sort((a,b) => b._golf - a._golf);
+    scoreFn = p => p._golf;
     label = '🏌️ Golf Placering';
-    valFn = p => p._golf + ' pts';
+    valFn = p => p._golf !== null ? p._golf + ' pts' : '–';
   } else if (sport === 'dart') {
-    sorted = allP.filter(p => p._dpts !== null).sort((a,b) => b._dpts - a._dpts);
+    scoreFn = p => p._dpts;
     label = '🎯 Dart Placering';
-    valFn = p => fmtN(p._dpts) + ' pts';
+    valFn = p => p._dpts !== null ? fmtN(p._dpts) + ' pts' : '–';
   } else {
     return '';
   }
+  const sorted = [
+    ...allP.filter(p => scoreFn(p) !== null).sort((a,b) => scoreFn(b) - scoreFn(a)),
+    ...allP.filter(p => scoreFn(p) === null),
+  ];
   const rankCls = ['gold','silver','bronze'];
-  const rows = sorted.length === 0
-    ? `<tr><td colspan="3" style="text-align:center;color:#bbb;padding:16px;font-size:13px">Inga resultat ännu</td></tr>`
-    : sorted.map((p,i) => `<tr>
-        <td class="rank-num ${rankCls[i]||''}">${i+1}</td>
+  const rows = sorted.map((p,i) => {
+    const hasScore = scoreFn(p) !== null;
+    return `<tr>
+        <td class="rank-num ${hasScore ? (rankCls[i]||'') : ''}">${hasScore ? i+1 : '–'}</td>
         <td class="left name-cell"><span class="klan-dot" style="background:${p.klanColor}"></span>${p.namn}</td>
         <td class="total-cell">${valFn(p)}</td>
-      </tr>`).join('');
+      </tr>`;
+  }).join('');
   return `
     <div class="results-grid" style="margin-top:16px">
       <div class="results-card">
@@ -1805,35 +1822,43 @@ function sportLeaderboardHtml(d, sport) {
 
 function renderResults(d) {
   // ── Singel ──
-  const allP = d.klaner.flatMap(klan =>
+  const allPRaw = d.klaner.flatMap(klan =>
     klan.spelare.map(p => ({ ...p, klanName: klan.name, klanColor: klan.color }))
-  ).filter(p => p._tot !== null).sort((a,b) => b._tot - a._tot);
+  );
+  const allP = [
+    ...allPRaw.filter(p => p._tot !== null).sort((a,b) => b._tot - a._tot),
+    ...allPRaw.filter(p => p._tot === null),
+  ];
 
   const rankCls = ['gold','silver','bronze'];
   const singelBody = document.getElementById('singel-body');
-  singelBody.innerHTML = allP.length === 0
-    ? `<tr><td colspan="6" style="text-align:center;color:#bbb;padding:24px;font-size:13px">Fyll i poäng ovan</td></tr>`
-    : allP.map((p, i) => `
+  singelBody.innerHTML = allP.map((p, i) => {
+    const hasScore = p._tot !== null;
+    return `
       <tr>
-        <td class="rank-num ${rankCls[i]||''}">${i+1}</td>
+        <td class="rank-num ${hasScore ? (rankCls[i]||'') : ''}">${hasScore ? i+1 : '–'}</td>
         <td class="left name-cell">
           <span class="klan-dot" style="background:${p.klanColor}"></span>${p.namn}
         </td>
         <td class="pts-cell">${p._golf ?? '–'}</td>
         <td class="pts-cell">${p._sky ?? '–'}</td>
         <td class="pts-cell">${p._dpts !== null ? fmtN(p._dpts) : '–'}</td>
-        <td class="total-cell">${fmtN(p._tot)}</td>
-      </tr>`).join('');
+        <td class="total-cell">${p._tot !== null ? fmtN(p._tot) : '–'}</td>
+      </tr>`;
+  }).join('');
 
   // ── Klan ──
-  const klaner = d.klaner.filter(k => k._ktot !== null).sort((a,b) => b._ktot - a._ktot);
+  const klanerSorted = [
+    ...d.klaner.filter(k => k._ktot !== null).sort((a,b) => b._ktot - a._ktot),
+    ...d.klaner.filter(k => k._ktot === null),
+  ];
   const klanBody = document.getElementById('klan-body');
   const showScrambleCol = !!d.scramble_enabled;
-  klanBody.innerHTML = klaner.length === 0
-    ? `<tr><td colspan="${showScrambleCol ? 7 : 6}" style="text-align:center;color:#bbb;padding:24px;font-size:13px">Fyll i poäng ovan</td></tr>`
-    : klaner.map((k, i) => `
+  klanBody.innerHTML = klanerSorted.map((k, i) => {
+    const hasScore = k._ktot !== null;
+    return `
       <tr>
-        <td class="rank-num ${rankCls[i]||''}">${i+1}</td>
+        <td class="rank-num ${hasScore ? (rankCls[i]||'') : ''}">${hasScore ? i+1 : '–'}</td>
         <td class="left name-cell" style="color:${k.color}">
           <span class="klan-dot" style="background:${k.color}"></span>${k.name}
         </td>
@@ -1841,8 +1866,9 @@ function renderResults(d) {
         <td class="pts-cell">${k._ksky !== null ? fmtN(k._ksky) : '–'}</td>
         <td class="pts-cell">${k._kdart !== null ? fmtN(k._kdart) : '–'}</td>
         ${showScrambleCol ? `<td class="pts-cell">${k._scramblePts > 0 ? fmtN(k._scramblePts, 1) : '–'}</td>` : ''}
-        <td class="total-cell">${fmtN(k._ktot)}</td>
-      </tr>`).join('');
+        <td class="total-cell">${k._ktot !== null ? fmtN(k._ktot) : '–'}</td>
+      </tr>`;
+  }).join('');
 }
 
 // ══════════════════════════════════════════════

@@ -232,6 +232,7 @@
     .player-total .tot-label { font-size: 12px; font-weight: 700; color: #777; text-transform: uppercase; }
     .player-total .tot-val { font-size: 20px; font-weight: 900; color: #1a1a2e; }
     .player-total .tot-val.empty { color: #ccc; font-size: 16px; }
+    .player-total .rank-badge { font-size: 13px; font-weight: 800; color: #bbb; min-width: 26px; }
 
     /* ── Klan scramble ── */
     .klan-scramble {
@@ -1372,8 +1373,15 @@ function chip(label, val, green=false) {
 
 function renderKlaner(d) {
   const grid = document.getElementById('klaner-grid');
-  // We will do partial updates to preserve focus on inputs
-  // Build the full HTML and diff by klan
+
+  // Compute singel rank for every player
+  const rankColors = ['#f9a825','#9e9e9e','#a0522d'];
+  const rankMap = {};
+  const allForRank = d.klaner.flatMap((klan, ki) =>
+    klan.spelare.map((p, pi) => ({ ki, pi, tot: p._tot }))
+  ).filter(x => x.tot !== null).sort((a, b) => b.tot - a.tot);
+  allForRank.forEach((x, i) => { rankMap[`${x.ki}-${x.pi}`] = i + 1; });
+
   d.klaner.forEach((klan, ki) => {
     let card = document.getElementById(`klan-card-${ki}`);
     const isNew = !card;
@@ -1453,6 +1461,7 @@ function renderKlaner(d) {
           </div>
           <div class="calc-row" id="calc-dart-${ki}-${pi}"></div>
           <div class="player-total" style="border-top: 2px solid ${klan.color}22">
+            <span class="rank-badge" id="rank-${ki}-${pi}">–</span>
             <span class="tot-label">Singel Total</span>
             <span class="tot-val" id="tot-${ki}-${pi}">–</span>
           </div>`;
@@ -1476,6 +1485,12 @@ function renderKlaner(d) {
         totEl.textContent = p._tot !== null ? fmtN(p._tot) : '–';
         totEl.style.color = p._tot !== null ? klan.color : '#ccc';
         totEl.className = 'tot-val' + (p._tot === null ? ' empty' : '');
+      }
+      const rankEl = document.getElementById(`rank-${ki}-${pi}`);
+      if (rankEl) {
+        const r = rankMap[`${ki}-${pi}`];
+        rankEl.textContent = r ? `#${r}` : '–';
+        rankEl.style.color = r ? (rankColors[r - 1] || '#999') : '#ccc';
       }
 
       // Update editable inputs (skip if focused)

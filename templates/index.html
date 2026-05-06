@@ -2676,12 +2676,14 @@ async function loadData() {
   const resp = await fetch('/api/data');
   state = await resp.json();
 
-  // Init missing fields (backwards compat)
+  // Init missing fields (backwards compat) — track if anything changed so we
+  // can immediately write the migrated state back to the DB.
+  let _migrated = false;
   if (state.klaner) {
     state.klaner.forEach(klan => {
-      if (klan.klan_scramble_gross === undefined) klan.klan_scramble_gross = null;
+      if (klan.klan_scramble_gross === undefined) { klan.klan_scramble_gross = null; _migrated = true; }
       klan.spelare.forEach(p => {
-        if (!p.skytte_rounds) p.skytte_rounds = [null, null, null, null];
+        if (!p.skytte_rounds) { p.skytte_rounds = [null, null, null, null]; _migrated = true; }
       });
     });
   }
@@ -2690,13 +2692,16 @@ async function loadData() {
       dryck: { flak_storlek: 24, ol: [], ovrigt: [] },
       mat: { frukost: [], lunch: [], middag: [] }
     };
+    _migrated = true;
   } else if (Array.isArray(state.mat_och_dryck.mat)) {
     state.mat_och_dryck.mat = { frukost: state.mat_och_dryck.mat, lunch: [], middag: [] };
+    _migrated = true;
   }
-  if (state.locked === undefined) state.locked = false;
+  if (state.locked === undefined) { state.locked = false; _migrated = true; }
   if (state.history) {
-    state.history.forEach(h => { if (h.locked === undefined) h.locked = true; });
+    state.history.forEach(h => { if (h.locked === undefined) { h.locked = true; _migrated = true; } });
   }
+  if (_migrated) markUnsaved(); // autosave will persist the migrated state to DB
 
   document.getElementById('course-name-input').value = state.course.name || '';
   document.getElementById('course-par-input').value  = state.course.par  || 72;

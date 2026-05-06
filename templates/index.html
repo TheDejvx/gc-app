@@ -1034,11 +1034,10 @@ function deriveData(data) {
       const khRaw = klanHcpRaw(klan.spelare);
       const kslope = khRaw !== null ? getSpelhandicap(khRaw, sk) : null;
 
-      // 4-man scramble: if gross entered, derive net = gross - kslope → klan_slag
+      // 4-man scramble: klan_slag and klan_scramble_gross are both gross scores; subtract kslope for net
       const grossRaw = parseInt2(klan.klan_scramble_gross);
-      const kslag = grossRaw !== null && kslope !== null
-        ? grossRaw - kslope
-        : parseInt2(klan.klan_slag);
+      const kslag_gross = grossRaw !== null ? grossRaw : parseInt2(klan.klan_slag);
+      const kslag = kslag_gross !== null && kslope !== null ? kslag_gross - kslope : kslag_gross;
 
       // Klan Golf = Scramble golf pts + Genomsnitt(individuella golf pts)
       const kgolfScramble = golfPtsKlan(kslag, par);

@@ -851,25 +851,10 @@
 
 <script>
 // ══════════════════════════════════════════════
-//  SLOPE TABLE – Eksjö GK  [maxHcp, spelHcp]
+//  COURSE CONSTANTS – Tee 57
 // ══════════════════════════════════════════════
-const SLOPE_TABLES = {
-  eksjo_gk: [
-    [1.3,0],[2.2,1],[3.1,2],[3.9,3],[4.8,4],
-    [5.6,5],[6.5,6],[7.4,7],[8.25,8],[9.1,9],
-    [10.0,10],[10.8,11],[11.7,12],[12.5,13],[13.4,14],
-    [14.3,15],[15.1,16],[16.0,17],[16.9,18],[17.7,19],
-    [18.6,20],[19.4,21],[20.3,22],[21.2,23],[22.0,24],
-    [22.9,25],[23.8,26],[24.6,27],[25.5,28],[26.3,29],
-    [27.2,30],[28.1,31],[28.9,32],[29.8,33],[30.7,34],
-    [31.5,35],[32.4,36]
-  ]
-};
-
-// ══════════════════════════════════════════════
-//  NÄSSJÖ GK – Slope 121, CR 70.7, Par 72
-// ══════════════════════════════════════════════
-const NASSJO_GK = { slope: 121, cr: 70.7, par: 72 };
+const EKSJO_GK  = { slope: 132, cr: 72.1, par: 72 }; // Gul tee
+const NASSJO_GK = { slope: 133, cr: 71.2, par: 72 }; // Tee 57
 const SKYTTE_VAPEN = ['Davids Bock', 'Pump', 'SBS', 'Halv auto'];
 const SKYTTE_ROUND_MAX = 5;
 const SKYTTE_NUM_ROUNDS = 4;
@@ -928,9 +913,8 @@ function parseInt2(str) {
 // ══════════════════════════════════════════════
 function getSpelhandicap(hcp, key) {
   if (hcp === null) return null;
-  const tbl = SLOPE_TABLES[key] || SLOPE_TABLES.eksjo_gk;
-  for (const [maxH, ph] of tbl) if (hcp <= maxH) return ph;
-  return 36;
+  const course = key === 'nassjo_gk' ? NASSJO_GK : EKSJO_GK;
+  return Math.round(hcp * (course.slope / 113) + (course.cr - course.par));
 }
 
 // Individuell golf: begränsas till min 20, max 40

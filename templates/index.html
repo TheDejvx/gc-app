@@ -2329,7 +2329,7 @@ function renderMatOchDryck() {
   const flakSz = md.dryck?.flak_storlek || 24;
   const ol = md.dryck?.ol || [];
   const ovrigt = md.dryck?.ovrigt || [];
-  const mat = md.mat || [];
+  const matLists = md.mat && !Array.isArray(md.mat) ? md.mat : { frukost: [], lunch: [], middag: [] };
 
   const olTotalFlak = ol.reduce((s, r) => s + (parseNum(r.antal_flak) || 0), 0);
   const olTotalKr   = ol.reduce((s, r) => s + (parseNum(r.pris) || 0) * (parseNum(r.antal_flak) || 0) * flakSz, 0);
@@ -2358,13 +2358,22 @@ function renderMatOchDryck() {
     </tr>`;
   }).join('');
 
-  const matRows = mat.map((r, i) => `
-    <div class="mat-row">
-      <input type="checkbox" class="mat-check" ${r.klar ? 'checked' : ''} onchange="onMatKlar(${i},this.checked)">
-      <input class="md-inp mat-vara${r.klar ? ' klar' : ''}" value="${r.vara}" oninput="onMdMatField(${i},'vara',this.value)">
-      <input class="md-inp num mat-antal" value="${r.antal}" placeholder="Antal" oninput="onMdMatField(${i},'antal',this.value)">
-      <button class="md-del-btn" onclick="onMatDel(${i})">✕</button>
-    </div>`).join('');
+  function matListHtml(key, label) {
+    const items = matLists[key] || [];
+    const rows = items.map((r, i) => `
+      <div class="mat-row">
+        <input type="checkbox" class="mat-check" ${r.klar ? 'checked' : ''} onchange="onMatKlar('${key}',${i},this.checked)">
+        <input class="md-inp mat-vara${r.klar ? ' klar' : ''}" value="${r.vara}" oninput="onMdMatField('${key}',${i},'vara',this.value)">
+        <input class="md-inp num mat-antal" value="${r.antal}" placeholder="Antal" oninput="onMdMatField('${key}',${i},'antal',this.value)">
+        <button class="md-del-btn" onclick="onMatDel('${key}',${i})">✕</button>
+      </div>`).join('');
+    return `
+      <section class="md-section">
+        <h2 class="md-heading">${label}</h2>
+        <div class="mat-list">${rows}</div>
+        <button class="md-add-btn" onclick="onMatAdd('${key}')">+ Lägg till vara</button>
+      </section>`;
+  }
 
   withFocus(() => { el.innerHTML = `
     <main class="tab-main">
@@ -2397,11 +2406,9 @@ function renderMatOchDryck() {
         <span class="md-sum-val">${fmtN(olTotalKr + ovTotalKr, 1)} kr</span>
       </section>
 
-      <section class="md-section">
-        <h2 class="md-heading">🛒 Mat – Inköpslista</h2>
-        <div class="mat-list">${matRows}</div>
-        <button class="md-add-btn" onclick="onMatAdd()">+ Lägg till vara</button>
-      </section>
+      ${matListHtml('frukost', '🍳 Frukost')}
+      ${matListHtml('lunch',   '🥗 Lunch')}
+      ${matListHtml('middag',  '🍽️ Middag')}
     </main>`; });
 }
 
@@ -2425,20 +2432,20 @@ function onMdAdd(list) {
   else state.mat_och_dryck.dryck.ovrigt.push({ namn: '', pris: 0, antal: 1 });
   markUnsaved(); render();
 }
-function onMdMatField(idx, field, val) {
-  state.mat_och_dryck.mat[idx][field] = val;
+function onMdMatField(key, idx, field, val) {
+  state.mat_och_dryck.mat[key][idx][field] = val;
   markUnsaved(); render();
 }
-function onMatKlar(idx, val) {
-  state.mat_och_dryck.mat[idx].klar = val;
+function onMatKlar(key, idx, val) {
+  state.mat_och_dryck.mat[key][idx].klar = val;
   markUnsaved(); render();
 }
-function onMatDel(idx) {
-  state.mat_och_dryck.mat.splice(idx, 1);
+function onMatDel(key, idx) {
+  state.mat_och_dryck.mat[key].splice(idx, 1);
   markUnsaved(); render();
 }
-function onMatAdd() {
-  state.mat_och_dryck.mat.push({ vara: '', antal: '', klar: false });
+function onMatAdd(key) {
+  state.mat_och_dryck.mat[key].push({ vara: '', antal: '', klar: false });
   markUnsaved(); render();
 }
 
@@ -2499,8 +2506,11 @@ async function loadData() {
   if (!state.mat_och_dryck) {
     state.mat_och_dryck = {
       dryck: { flak_storlek: 24, ol: [], ovrigt: [] },
-      mat: []
+      mat: { frukost: [], lunch: [], middag: [] }
     };
+  } else if (Array.isArray(state.mat_och_dryck.mat)) {
+    // Migrate old flat array to named lists
+    state.mat_och_dryck.mat = { frukost: state.mat_och_dryck.mat, lunch: [], middag: [] };
   }
 
   document.getElementById('course-name-input').value = state.course.name || '';

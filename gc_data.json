@@ -547,13 +547,10 @@
         { "namn": "Beaumont des Crayères",  "pris": 299, "antal": 1 }
       ]
     },
-    "mat": [
-      { "vara": "Kött/Fisk (grill)", "antal": "", "klar": false },
-      { "vara": "Bröd",              "antal": "", "klar": false },
-      { "vara": "Sallad",            "antal": "", "klar": false },
-      { "vara": "Såser",             "antal": "", "klar": false },
-      { "vara": "Chips/snacks",      "antal": "", "klar": false },
-      { "vara": "Vatten/Läsk",       "antal": "", "klar": false }
-    ]
+    "mat": {
+      "frukost": [],
+      "lunch":   [],
+      "middag":  []
+    }
   }
 }

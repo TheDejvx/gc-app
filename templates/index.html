@@ -851,10 +851,22 @@
 
 <script>
 // ══════════════════════════════════════════════
-//  COURSE CONSTANTS – Tee 57
+//  COURSE CONSTANTS
 // ══════════════════════════════════════════════
-const EKSJO_GK  = { slope: 132, cr: 72.1, par: 72 }; // Gul tee
-const NASSJO_GK = { slope: 133, cr: 71.2, par: 72 }; // Tee 57
+// 2026+: Tee 57 / Gul tee
+const EKSJO_GK  = { slope: 132, cr: 72.1, par: 72 };
+const NASSJO_GK = { slope: 133, cr: 71.2, par: 72 };
+// Pre-2026: legacy spelhandicap lookup table (exact values used in 2024–2025)
+const EKSJO_GK_LEGACY = [
+  [1.3,0],[2.2,1],[3.1,2],[3.9,3],[4.8,4],
+  [5.6,5],[6.5,6],[7.4,7],[8.25,8],[9.1,9],
+  [10.0,10],[10.8,11],[11.7,12],[12.5,13],[13.4,14],
+  [14.3,15],[15.1,16],[16.0,17],[16.9,18],[17.7,19],
+  [18.6,20],[19.4,21],[20.3,22],[21.2,23],[22.0,24],
+  [22.9,25],[23.8,26],[24.6,27],[25.5,28],[26.3,29],
+  [27.2,30],[28.1,31],[28.9,32],[29.8,33],[30.7,34],
+  [31.5,35],[32.4,36]
+];
 const SKYTTE_VAPEN = ['Davids Bock', 'Pump', 'SBS', 'Halv auto'];
 const SKYTTE_ROUND_MAX = 5;
 const SKYTTE_NUM_ROUNDS = 4;
@@ -911,8 +923,13 @@ function parseInt2(str) {
 // ══════════════════════════════════════════════
 //  CALCULATIONS
 // ══════════════════════════════════════════════
-function getSpelhandicap(hcp, key) {
+function getSpelhandicap(hcp, key, year) {
   if (hcp === null) return null;
+  if (!year || year < 2026) {
+    const tbl = EKSJO_GK_LEGACY;
+    for (const [maxH, ph] of tbl) if (hcp <= maxH) return ph;
+    return 36;
+  }
   const course = key === 'nassjo_gk' ? NASSJO_GK : EKSJO_GK;
   return Math.round(hcp * (course.slope / 113) + (course.cr - course.par));
 }
@@ -967,6 +984,7 @@ function deriveData(data) {
   if (!data) return null;
   const par = parseInt2(data.course.par) || 72;
   const sk = data.course.slope_table || 'eksjo_gk';
+  const year = data.year || 0;
 
   // Scramble points per klan from 2v2 matches
   const scramblePtsMap = {};
@@ -1009,7 +1027,7 @@ function deriveData(data) {
         const slag  = parseInt2(p.slag);
         const sky   = playerSkytteTotal(p);
         const dart  = parseNum(p.dart);
-        const shcp  = getSpelhandicap(hcp, sk);
+        const shcp  = getSpelhandicap(hcp, sk, year);
         const golf  = golfPts(slag, shcp, par);
         const dpts  = dartPts(dart);
         const totParts = [golf, sky, dpts].filter(x => x !== null);
@@ -1020,7 +1038,7 @@ function deriveData(data) {
       });
 
       const khRaw = klanHcpRaw(klan.spelare);
-      const kslope = khRaw !== null ? getSpelhandicap(khRaw, sk) : null;
+      const kslope = khRaw !== null ? getSpelhandicap(khRaw, sk, year) : null;
 
       // 4-man scramble: klan_slag and klan_scramble_gross are both gross scores; subtract kslope for net
       const grossRaw = parseInt2(klan.klan_scramble_gross);

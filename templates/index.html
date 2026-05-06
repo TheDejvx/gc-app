@@ -1421,9 +1421,10 @@ function renderKlaner(d) {
             </div>
             <div class="input-group">
               <label>Slag</label>
-              <input class="gc-input" type="text" inputmode="numeric"
-                id="inp-${ki}-${pi}-slag" placeholder="ex. 94"
-                oninput="onInput(${ki},${pi},'slag',this)">
+              <input class="gc-input" type="text" readonly
+                id="inp-${ki}-${pi}-slag" placeholder="–"
+                style="background:#f5f5f5;cursor:default"
+                title="Anges via Golf-fliken">
             </div>
           </div>
           <div class="calc-row" id="calc-golf-${ki}-${pi}"></div>
@@ -1436,9 +1437,10 @@ function renderKlaner(d) {
           </div>
           <div class="input-group">
             <label>Dart (totala poäng 0–50)</label>
-            <input class="gc-input" type="text" inputmode="numeric"
-              id="inp-${ki}-${pi}-dart" placeholder="ex. 39"
-              oninput="onInput(${ki},${pi},'dart',this)">
+            <input class="gc-input" type="text" readonly
+              id="inp-${ki}-${pi}-dart" placeholder="–"
+              style="background:#f5f5f5;cursor:default"
+              title="Anges via Dart-fliken">
           </div>
           <div class="calc-row" id="calc-dart-${ki}-${pi}"></div>
           <div class="player-total" style="border-top: 2px solid ${klan.color}22">
@@ -1467,8 +1469,8 @@ function renderKlaner(d) {
         totEl.className = 'tot-val' + (p._tot === null ? ' empty' : '');
       }
 
-      // Update input filled state (don't change value if focused)
-      ['hcp','slag','dart'].forEach(f => {
+      // Update editable inputs (skip if focused)
+      ['hcp'].forEach(f => {
         const el = document.getElementById(`inp-${ki}-${pi}-${f}`);
         if (el && document.activeElement !== el) {
           const raw = state.klaner[ki].spelare[pi][f];
@@ -1476,13 +1478,21 @@ function renderKlaner(d) {
           el.classList.toggle('filled', raw !== null);
         }
       });
-      // Skytte is readonly — show derived total from rounds
+      // Readonly display fields — always sync from state
       const skyEl = document.getElementById(`inp-${ki}-${pi}-skytte`);
       if (skyEl) {
         const skyVal = klan.spelare[pi]._sky;
         skyEl.value = skyVal !== null ? String(skyVal) : '';
         skyEl.classList.toggle('filled', skyVal !== null);
       }
+      ['slag','dart'].forEach(f => {
+        const el = document.getElementById(`inp-${ki}-${pi}-${f}`);
+        if (el) {
+          const raw = state.klaner[ki].spelare[pi][f];
+          el.value = raw !== null ? String(raw) : '';
+          el.classList.toggle('filled', raw !== null);
+        }
+      });
       // Sync name (only if not focused)
       const nEl = document.getElementById(`inp-${ki}-${pi}-namn`);
       if (nEl && document.activeElement !== nEl) {

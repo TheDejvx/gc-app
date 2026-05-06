@@ -77,21 +77,21 @@
       padding: 7px 16px;
       letter-spacing: 0.3px;
     }
-    /* ── Ny säsong button ── */
+    /* ── Nytt år button (header) ── */
     #new-year-btn {
-      display: block;
-      margin: 28px auto 0;
-      background: #1565c0;
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,0.35);
       color: white;
-      border: none;
-      padding: 13px 28px;
-      border-radius: 10px;
-      font-size: 15px;
+      padding: 8px 13px;
+      border-radius: 8px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
+      flex-shrink: 0;
       transition: background 0.2s;
+      white-space: nowrap;
     }
-    #new-year-btn:hover { background: #1976d2; }
+    #new-year-btn:hover { background: rgba(255,255,255,0.12); }
     /* ── History edit inputs ── */
     .hist-inp { width: 64px; padding: 3px 6px; font-size: 13px; border: 1.5px solid #bbb; border-radius: 5px; }
     .hist-lock-btn { background: transparent; border: 1.5px solid #ccc; border-radius: 6px; padding: 3px 8px; cursor: pointer; font-size: 13px; }
@@ -831,6 +831,7 @@
   </div>
   <div class="spacer"></div>
   <span id="save-status"></span>
+  <button id="new-year-btn" onclick="newYear()" title="Lägg till nytt år">+ Nytt år</button>
   <button id="lock-btn" onclick="toggleLock()" title="Lås/lås upp år">🔓</button>
   <button id="save-btn">Spara</button>
 </header>
@@ -861,7 +862,6 @@
     <main>
       <div class="klaner-grid" id="klaner-grid"><!-- rendered by JS --></div>
       <div id="scramble-section"></div>
-      <button id="new-year-btn" onclick="newYear()">Ny säsong →</button>
 
       <div class="results-grid">
         <div class="results-card">
@@ -1184,6 +1184,7 @@ function switchTab(tab) {
   document.getElementById('view-current').style.display = isCurrent ? '' : 'none';
   document.getElementById('view-history').style.display = isCurrent ? 'none' : '';
   document.getElementById('lock-btn').style.display = isCurrent ? '' : 'none';
+  document.getElementById('new-year-btn').style.display = isCurrent ? '' : 'none';
   document.getElementById('save-btn').style.display = (isCurrent && !state.locked) ? '' : 'none';
   document.getElementById('save-status').style.display = (isCurrent && !state.locked) ? '' : 'none';
 
@@ -2581,14 +2582,12 @@ function applyLockUI() {
   const lockBtn = document.getElementById('lock-btn');
   const saveBtn = document.getElementById('save-btn');
   const saveStatus = document.getElementById('save-status');
-  const nyBtn = document.getElementById('new-year-btn');
 
   vc.classList.toggle('year-locked', locked);
   if (banner) banner.style.display = locked ? '' : 'none';
   if (lockBtn) lockBtn.textContent = locked ? '🔒' : '🔓';
   if (saveBtn) saveBtn.style.display = locked ? 'none' : '';
   if (saveStatus) saveStatus.style.display = locked ? 'none' : '';
-  if (nyBtn) nyBtn.style.display = locked ? '' : 'none';
 }
 
 function toggleLock() {

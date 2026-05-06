@@ -1015,8 +1015,9 @@ function deriveData(data) {
       const ksky   = klanSkytte(klan.spelare);
       const kdart  = klanDart(klan.spelare);
       const _scramblePts = scramblePtsMap[klan.id] || 0;
-      const ktot   = (kgolf !== null && ksky !== null && kdart !== null)
-                     ? kgolf + ksky + kdart + (data.scramble_enabled ? _scramblePts : 0) : null;
+      const ktotParts = [kgolf, ksky, kdart].filter(x => x !== null);
+      const ktot = ktotParts.length > 0
+        ? ktotParts.reduce((a,b) => a+b, 0) + (data.scramble_enabled ? _scramblePts : 0) : null;
 
       return { ...klan, spelare: sp,
                _khRaw: khRaw, _kslope: kslope, _kslag_net: kslag,

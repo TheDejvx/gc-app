@@ -1121,6 +1121,11 @@ function computeStartlista(hist) {
   return pairs;
 }
 
+// Players no longer participating: map prev-year namn → current-year replacement
+const STARTLISTA_SUBS = {
+  'Mikael Nordin': 'Andreas Milander',
+};
+
 function startlistaHtml() {
   const prevHist = (state.history || []).reduce((best, h) =>
     (!best || h.year > best.year) ? h : best, null);
@@ -1130,13 +1135,16 @@ function startlistaHtml() {
   const rankCls = ['gold','silver','bronze'];
 
   const pairsHtml = pairs.map((pair, i) => {
-    const playerHtml = pair.filter(Boolean).map(p => `
+    const playerHtml = pair.filter(Boolean).map(p => {
+      const displayNamn = STARTLISTA_SUBS[p.namn] || p.namn;
+      return `
       <div class="start-player">
         <span class="start-rank ${rankCls[p.rank-1]||''}">#${p.rank}</span>
         <span class="start-dot" style="background:${p.klanColor}"></span>
-        <span class="start-name">${p.namn}</span>
+        <span class="start-name">${displayNamn}</span>
         <span class="start-score">${fmtN(p._tot)}</span>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     return `<div class="start-pair"><div class="car-label">Bil ${i+1}</div>${playerHtml}</div>`;
   }).join('');
 

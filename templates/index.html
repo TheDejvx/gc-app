@@ -937,6 +937,7 @@ function scrambleRoundResult(scoreA, scoreB, hcpA, hcpB) {
 // ══════════════════════════════════════════════
 let state = null;
 let unsaved = false;
+let _autoSaveTimer = null;
 let activeTab = 'current';
 let activeSubTab = 'oversikt';
 
@@ -2486,6 +2487,22 @@ function onKlanSlag(ki, el) {
 function markUnsaved() {
   unsaved = true;
   document.getElementById('save-status').textContent = '● Osparade ändringar';
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = setTimeout(async () => {
+    if (!unsaved) return;
+    try {
+      const resp = await fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(state)
+      });
+      const res = await resp.json();
+      if (res.status === 'ok') {
+        unsaved = false;
+        document.getElementById('save-status').textContent = '';
+      }
+    } catch(e) { /* silent — manual Spara still available */ }
+  }, 1500);
 }
 
 // ══════════════════════════════════════════════
@@ -2546,6 +2563,7 @@ async function loadData() {
 }
 
 async function saveData() {
+  clearTimeout(_autoSaveTimer);
   const btn = document.getElementById('save-btn');
   btn.disabled = true;
   btn.textContent = '⏳ Sparar…';

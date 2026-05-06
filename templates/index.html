@@ -32,6 +32,13 @@
     header .sub { font-size: 12px; opacity: 0.7; margin-top: 2px; }
     header .spacer { flex: 1; }
     #save-status { font-size: 12px; color: #f9a825; }
+    @media (max-width: 540px) {
+      header { flex-wrap: wrap; gap: 8px; padding: 10px 14px; }
+      header .spacer { display: none; }
+      header > div:first-child { flex: 1; }
+      #save-status { order: 10; font-size: 11px; width: 100%; }
+      #new-year-btn, #lock-btn, #save-btn { padding: 7px 10px; font-size: 13px; }
+    }
     #save-btn {
       background: #f9a825;
       color: #1a1a2e;
@@ -834,7 +841,7 @@
   <button id="new-year-btn" onclick="newYear()" title="Lägg till nytt år">+ Nytt år</button>
   <button id="lock-btn" onclick="toggleLock()" title="Lås/lås upp år">🔓</button>
   <button id="save-btn">Spara</button>
-  <button onclick="location.reload()" title="Ladda om sidan" style="background:transparent;border:1.5px solid rgba(255,255,255,0.35);color:white;padding:8px 12px;border-radius:8px;font-size:16px;cursor:pointer;flex-shrink:0;">↺</button>
+  <button onclick="location.reload()" title="Ladda om sidan" style="background:transparent;border:1.5px solid rgba(255,255,255,0.35);color:white;padding:8px 12px;border-radius:8px;font-size:16px;cursor:pointer;flex-shrink:0;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='transparent'">↺</button>
 </header>
 
 <div id="weather-bar">

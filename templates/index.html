@@ -963,13 +963,13 @@ function playerSkytteTotal(p) {
 
 function klanSkytte(spelare) {
   const vs = spelare.map(playerSkytteTotal).filter(v => v !== null);
-  if (vs.length < 4) return null;
+  if (vs.length === 0) return null;
   return vs.reduce((a,b) => a+b, 0) / 2;
 }
 
 function klanDart(spelare) {
   const vs = spelare.map(p => dartPts(parseNum(p.dart))).filter(v => v !== null);
-  if (vs.length < 4) return null;
+  if (vs.length === 0) return null;
   return vs.reduce((a,b) => a+b, 0) / 2;
 }
 

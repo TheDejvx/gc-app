@@ -745,6 +745,15 @@
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     .toast.error { background: #c62828; }
+    /* ── Systembolaget autocomplete ── */
+    .sb-dropdown { position: fixed; background: white; border: 1.5px solid #ddd; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.13); overflow: hidden; overflow-y: auto; max-height: 260px; z-index: 9999; }
+    .sb-option { padding: 9px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; border-bottom: 1px solid #f5f5f5; }
+    .sb-option:last-child { border-bottom: none; }
+    .sb-option:hover { background: #f0f7f0; }
+    .sb-opt-name { font-size: 13px; font-weight: 600; color: #222; }
+    .sb-opt-meta { font-size: 11px; color: #888; white-space: nowrap; flex-shrink: 0; }
+    .sb-loading { font-size: 12px; color: #aaa; padding: 10px 14px; }
+
     /* ── Mat och Dryck ── */
     .md-section { background: white; border-radius: 14px; padding: 18px 16px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
     .md-heading { font-size: 16px; font-weight: 900; color: #1a2e1a; margin-bottom: 12px; }
@@ -2318,6 +2327,61 @@ function onInput(ki, pi, field, el) {
 }
 
 // ══════════════════════════════════════════════
+//  SYSTEMBOLAGET AUTOCOMPLETE
+// ══════════════════════════════════════════════
+let _sbTimer = null;
+
+function onSbInput(el, list, idx) {
+  const arr = list === 'ol' ? state.mat_och_dryck.dryck.ol : state.mat_och_dryck.dryck.ovrigt;
+  arr[idx].namn = el.value;
+  markUnsaved();
+  clearTimeout(_sbTimer);
+  const q = el.value.trim();
+  if (q.length < 2) { closeSbDropdown(); return; }
+  _sbTimer = setTimeout(() => {
+    fetch('/api/sb_search?q=' + encodeURIComponent(q))
+      .then(r => r.json())
+      .then(items => showSbDropdown(items, el, list, idx))
+      .catch(() => {});
+  }, 350);
+}
+
+function showSbDropdown(items, anchorEl, list, idx) {
+  closeSbDropdown();
+  if (!items.length) return;
+  const dd = document.createElement('div');
+  dd.id = 'sb-dd';
+  dd.className = 'sb-dropdown';
+  items.forEach(item => {
+    const opt = document.createElement('div');
+    opt.className = 'sb-option';
+    const meta = [item.price != null ? item.price + ' kr' : '', item.vol || ''].filter(Boolean).join(' · ');
+    opt.innerHTML = `<span class="sb-opt-name">${item.name}</span><span class="sb-opt-meta">${meta}</span>`;
+    opt.onmousedown = e => { e.preventDefault(); onSbSelect(list, idx, item.name, item.price); closeSbDropdown(); };
+    dd.appendChild(opt);
+  });
+  const rect = anchorEl.getBoundingClientRect();
+  dd.style.cssText = `top:${rect.bottom + 2}px;left:${rect.left}px;width:${Math.max(rect.width, 280)}px`;
+  document.body.appendChild(dd);
+  const onOut = e => { if (e.target !== anchorEl && !dd.contains(e.target)) closeSbDropdown(); };
+  document.addEventListener('mousedown', onOut);
+  dd._cleanup = () => document.removeEventListener('mousedown', onOut);
+}
+
+function closeSbDropdown() {
+  const dd = document.getElementById('sb-dd');
+  if (dd) { if (dd._cleanup) dd._cleanup(); dd.remove(); }
+}
+
+function onSbSelect(list, idx, name, price) {
+  const arr = list === 'ol' ? state.mat_och_dryck.dryck.ol : state.mat_och_dryck.dryck.ovrigt;
+  arr[idx].namn = name;
+  if (price != null) arr[idx].pris = price;
+  markUnsaved();
+  render();
+}
+
+// ══════════════════════════════════════════════
 //  MAT OCH DRYCK
 // ══════════════════════════════════════════════
 function renderMatOchDryck() {
@@ -2339,7 +2403,7 @@ function renderMatOchDryck() {
   const olRows = ol.map((r, i) => {
     const summa = (parseNum(r.pris) || 0) * (parseNum(r.antal_flak) || 0) * flakSz;
     return `<tr>
-      <td><input class="md-inp" value="${r.namn}" oninput="onMdField('ol',${i},'namn',this.value)"></td>
+      <td><input class="md-inp" value="${r.namn}" oninput="onSbInput(this,'ol',${i})" onblur="render()"></td>
       <td><input class="md-inp num" value="${r.pris}" oninput="onMdField('ol',${i},'pris',this.value)"></td>
       <td><input class="md-inp num" value="${r.antal_flak}" oninput="onMdField('ol',${i},'antal_flak',this.value)"></td>
       <td class="md-summa">${fmtN(summa, 1)}</td>
@@ -2350,7 +2414,7 @@ function renderMatOchDryck() {
   const ovRows = ovrigt.map((r, i) => {
     const summa = (parseNum(r.pris) || 0) * (parseNum(r.antal) || 0);
     return `<tr>
-      <td><input class="md-inp" value="${r.namn}" oninput="onMdField('ovrigt',${i},'namn',this.value)"></td>
+      <td><input class="md-inp" value="${r.namn}" oninput="onSbInput(this,'ovrigt',${i})" onblur="render()"></td>
       <td><input class="md-inp num" value="${r.pris}" oninput="onMdField('ovrigt',${i},'pris',this.value)"></td>
       <td><input class="md-inp num" value="${r.antal}" oninput="onMdField('ovrigt',${i},'antal',this.value)"></td>
       <td class="md-summa">${fmtN(summa, 1)}</td>

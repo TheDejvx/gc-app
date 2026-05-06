@@ -1,6 +1,9 @@
 from flask import Flask, render_template, jsonify, request
 import json
 import os
+import time
+import threading
+import requests as http
 from pymongo import MongoClient
 
 app = Flask(__name__)
@@ -77,6 +80,67 @@ def save():
         return jsonify({'status': 'ok', 'message': 'Sparat!'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+
+# ── Systembolaget product search ──────────────────────────────────────────────
+_SB_URL   = 'https://raw.githubusercontent.com/AlexGustafsson/systembolaget-api-data/main/data/assortment.json'
+_SB_CACHE = os.path.join(os.path.dirname(__file__), 'sb_cache.json')
+_SB_TTL   = 24 * 60 * 60  # 24 h
+
+_sb_products = None
+_sb_loading  = False
+_sb_lock     = threading.Lock()
+
+def _sb_load():
+    global _sb_products, _sb_loading
+    with _sb_lock:
+        if _sb_loading:
+            return
+        _sb_loading = True
+    try:
+        if os.path.exists(_SB_CACHE) and (time.time() - os.path.getmtime(_SB_CACHE)) < _SB_TTL:
+            with open(_SB_CACHE, 'r', encoding='utf-8') as f:
+                _sb_products = json.load(f)
+            print(f'SB: loaded {len(_sb_products)} products from cache')
+            return
+        print('SB: downloading assortment...')
+        r = http.get(_SB_URL, timeout=60)
+        r.raise_for_status()
+        raw = r.json()
+        products = []
+        for p in raw:
+            bold = p.get('productNameBold') or p.get('ProductNameBold') or ''
+            thin = p.get('productNameThin') or p.get('ProductNameThin') or ''
+            name = f'{bold} {thin}'.strip() or p.get('name') or p.get('Name') or ''
+            if not name:
+                continue
+            price = p.get('price') or p.get('Price') or p.get('PriceInclVAT')
+            products.append({
+                'name':  name,
+                'price': round(float(price), 2) if price else None,
+                'cat':   str(p.get('categoryLevel1') or p.get('Category') or ''),
+                'vol':   str(p.get('volumeText')     or p.get('Volume')   or ''),
+            })
+        _sb_products = products
+        with open(_SB_CACHE, 'w', encoding='utf-8') as f:
+            json.dump(products, f, ensure_ascii=False)
+        print(f'SB: cached {len(products)} products')
+    except Exception as e:
+        print(f'SB: load failed – {e}')
+    finally:
+        _sb_loading = False
+
+@app.route('/api/sb_search')
+def sb_search():
+    q = request.args.get('q', '').strip().lower()
+    if len(q) < 2:
+        return jsonify([])
+    if _sb_products is None:
+        threading.Thread(target=_sb_load, daemon=True).start()
+        return jsonify([])
+    results = [p for p in _sb_products if q in p['name'].lower()][:15]
+    return jsonify(results)
 
 
 if __name__ == '__main__':

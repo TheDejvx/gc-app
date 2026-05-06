@@ -1766,7 +1766,7 @@ function renderGolfTab(d) {
                         <td><input class="tab-input${state.klaner[ki].spelare[pi].hcp !== null ? ' filled' : ''}" type="text" inputmode="decimal"
                           id="gt-hcp-${ki}-${pi}"
                           value="${state.klaner[ki].spelare[pi].hcp !== null ? String(state.klaner[ki].spelare[pi].hcp).replace('.',',') : ''}"
-                          placeholder="HCP" oninput="onInput(${ki},${pi},'hcp',this)"></td>
+                          placeholder="HCP" readonly style="background:#f0f0f0;cursor:default;opacity:0.7"></td>
                         <td><input class="tab-input${state.klaner[ki].spelare[pi].slag !== null ? ' filled' : ''}" type="text" inputmode="numeric"
                           id="gt-slag-${ki}-${pi}"
                           value="${state.klaner[ki].spelare[pi].slag ?? ''}"

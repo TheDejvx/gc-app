@@ -796,6 +796,9 @@
   <!-- ── Dart ── -->
   <div id="sub-view-dart" style="display:none"></div>
 
+  <!-- ── 4-Man Scramble ── -->
+  <div id="sub-view-scramble4" style="display:none"></div>
+
   <!-- ── GC1 Scramble ── -->
   <div id="sub-view-scramble" style="display:none"><div id="scramble-section-tab"></div></div>
 </div>
@@ -893,10 +896,10 @@ function golfPts(slag, shcp, par) {
   return Math.max(20, Math.min(40, 36 + par - slag + shcp));
 }
 
-// Klan scramble golf: INGEN begränsning (kan vara > 40)
-function golfPtsKlan(slag, shcp, par) {
-  if (slag === null || shcp === null) return null;
-  return 36 + par - slag + shcp;
+// Klan scramble golf: tar netto-slag (brutto minus spelHcp)
+function golfPtsKlan(net_slag, par) {
+  if (net_slag === null) return null;
+  return 36 + par - net_slag;
 }
 
 function dartPts(raw) {
@@ -990,10 +993,15 @@ function deriveData(data) {
 
       const khRaw = klanHcpRaw(klan.spelare);
       const kslope = khRaw !== null ? getSpelhandicap(khRaw, sk) : null;
-      const kslag  = parseInt2(klan.klan_slag);
+
+      // 4-man scramble: if gross entered, derive net = gross - kslope → klan_slag
+      const grossRaw = parseInt2(klan.klan_scramble_gross);
+      const kslag = grossRaw !== null && kslope !== null
+        ? grossRaw - kslope
+        : parseInt2(klan.klan_slag);
 
       // Klan Golf = Scramble golf pts + Genomsnitt(individuella golf pts)
-      const kgolfScramble = golfPtsKlan(kslag, kslope, par);
+      const kgolfScramble = golfPtsKlan(kslag, par);
       const indivGolf = sp.map(p => p._golf).filter(g => g !== null);
       const indivGolfAvg = indivGolf.length === sp.length
         ? indivGolf.reduce((a, b) => a + b, 0) / sp.length : null;
@@ -1010,7 +1018,7 @@ function deriveData(data) {
                      ? kgolf + ksky + kdart + (data.scramble_enabled ? _scramblePts : 0) : null;
 
       return { ...klan, spelare: sp,
-               _khRaw: khRaw, _kslope: kslope,
+               _khRaw: khRaw, _kslope: kslope, _kslag_net: kslag,
                _kgolfScramble: kgolfScramble, _indivGolfAvg: indivGolfAvg,
                _kgolf: kgolf, _ksky: ksky, _kdart: kdart, _scramblePts, _ktot: ktot };
     })
@@ -1051,11 +1059,12 @@ function buildSubTabs() {
   const bar = document.getElementById('subtab-bar');
   if (!bar) return;
   const tabs = [
-    { id: 'oversikt', label: '📊 Översikt' },
-    { id: 'golf',     label: '🏌️ Golf' },
-    { id: 'skytte',   label: '🎯 Skytte' },
-    { id: 'dart',     label: '🎯 Dart' },
-    { id: 'scramble', label: '⛳ GC1 Scramble' },
+    { id: 'oversikt',    label: '📊 Översikt' },
+    { id: 'golf',        label: '🏌️ Golf' },
+    { id: 'scramble4',   label: '🏌️ 4-Man Scramble' },
+    { id: 'skytte',      label: '🔫 Skytte' },
+    { id: 'dart',        label: '🎯 Dart' },
+    { id: 'scramble',    label: '⛳ GC1 Scramble' },
   ];
   bar.innerHTML = tabs.map(t =>
     `<button class="subtab-btn${t.id === activeSubTab ? ' active' : ''}"
@@ -1067,7 +1076,7 @@ function switchSubTab(tab) {
   activeSubTab = tab;
   document.querySelectorAll('.subtab-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.subtab === tab));
-  ['oversikt','golf','skytte','dart','scramble'].forEach(t => {
+  ['oversikt','golf','scramble4','skytte','dart','scramble'].forEach(t => {
     const el = document.getElementById(`sub-view-${t}`);
     if (el) el.style.display = t === tab ? '' : 'none';
   });
@@ -1322,6 +1331,8 @@ function render() {
     renderSkytteTab(d);
   } else if (activeSubTab === 'dart') {
     renderDartTab(d);
+  } else if (activeSubTab === 'scramble4') {
+    renderFyrMannScrambleTab(d);
   } else if (activeSubTab === 'scramble') {
     renderScramble(d, 'scramble-section-tab');
   }
@@ -1391,6 +1402,8 @@ function renderKlaner(d) {
             placeholder="Spelarens namn"
             oninput="onInput(${ki},${pi},'namn',this)"
             title="Klicka för att redigera namn">
+          ${p.gc_name ? `<div style="font-size:11px;color:#888;font-weight:600;padding:0 6px 2px;letter-spacing:0.4px">${p.gc_name}</div>` : ''}
+          ${p.golf_id ? `<div style="font-size:11px;color:#bbb;padding:0 6px 4px;letter-spacing:0.3px">${p.golf_id}</div>` : ''}
           <div class="input-pair">
             <div class="input-group">
               <label>HCP</label>
@@ -1407,10 +1420,11 @@ function renderKlaner(d) {
           </div>
           <div class="calc-row" id="calc-golf-${ki}-${pi}"></div>
           <div class="input-group">
-            <label>Skytte (duvor 0–20)</label>
-            <input class="gc-input" type="text" inputmode="numeric"
-              id="inp-${ki}-${pi}-skytte" placeholder="ex. 14"
-              oninput="onInput(${ki},${pi},'skytte',this)">
+            <label>Skytte (duvor totalt)</label>
+            <input class="gc-input" type="text" readonly
+              id="inp-${ki}-${pi}-skytte" placeholder="–"
+              style="background:#f5f5f5;cursor:default"
+              title="Anges via Skytte-fliken">
           </div>
           <div class="input-group">
             <label>Dart (totala poäng 0–50)</label>
@@ -1446,7 +1460,7 @@ function renderKlaner(d) {
       }
 
       // Update input filled state (don't change value if focused)
-      ['hcp','slag','skytte','dart'].forEach(f => {
+      ['hcp','slag','dart'].forEach(f => {
         const el = document.getElementById(`inp-${ki}-${pi}-${f}`);
         if (el && document.activeElement !== el) {
           const raw = state.klaner[ki].spelare[pi][f];
@@ -1454,6 +1468,13 @@ function renderKlaner(d) {
           el.classList.toggle('filled', raw !== null);
         }
       });
+      // Skytte is readonly — show derived total from rounds
+      const skyEl = document.getElementById(`inp-${ki}-${pi}-skytte`);
+      if (skyEl) {
+        const skyVal = klan.spelare[pi]._sky;
+        skyEl.value = skyVal !== null ? String(skyVal) : '';
+        skyEl.classList.toggle('filled', skyVal !== null);
+      }
       // Sync name (only if not focused)
       const nEl = document.getElementById(`inp-${ki}-${pi}-namn`);
       if (nEl && document.activeElement !== nEl) {
@@ -1632,7 +1653,7 @@ function renderSkytteTab(d) {
             <th class="left">Spelare</th>
             <th>Vapen</th>
             <th>Duvor (max ${SKYTTE_ROUND_MAX})</th>
-            <th class="green">Slag</th>
+            <th class="green">Duvor</th>
           </tr></thead>
           <tbody>${rows}</tbody>
         </table>
@@ -1804,6 +1825,58 @@ function renderResults(d) {
         ${showScrambleCol ? `<td class="pts-cell">${k._scramblePts > 0 ? fmtN(k._scramblePts, 1) : '–'}</td>` : ''}
         <td class="total-cell">${fmtN(k._ktot)}</td>
       </tr>`).join('');
+}
+
+// ══════════════════════════════════════════════
+//  4-MAN SCRAMBLE TAB
+// ══════════════════════════════════════════════
+function renderFyrMannScrambleTab(d) {
+  const el = document.getElementById('sub-view-scramble4');
+  if (!el) return;
+  withFocus(() => {
+    const par = d.course_par || 72;
+    const cards = d.klaner.map((k, ki) => {
+      const grossVal = state.klaner[ki].klan_scramble_gross ?? '';
+      const hcp = k._khRaw !== null ? fmtN(k._khRaw) : '–';
+      const slope = k._kslope !== null ? k._kslope : '–';
+      const netslag = k._kslag_net !== null ? k._kslag_net : '–';
+      const gpts = k._kgolfScramble !== null ? k._kgolfScramble : '–';
+      return `
+        <div class="klan-card" style="margin-bottom:14px">
+          <div class="klan-header" style="background:${k.color || '#555'}">
+            <span class="klan-name">${k.name}</span>
+          </div>
+          <div style="padding:16px">
+            <div class="input-group" style="margin-bottom:14px">
+              <label>Brutto slag (lagets totala)</label>
+              <input class="gc-input${grossVal !== '' ? ' filled' : ''}" type="text" inputmode="numeric"
+                id="s4-gross-${ki}" value="${grossVal}"
+                placeholder="ex. 74"
+                oninput="onKlan4ManScramble(${ki},this)">
+            </div>
+            <table class="sport-tab-table">
+              <thead><tr>
+                <th class="left">Klan HCP</th>
+                <th>Spelhandicap (slope)</th>
+                <th>Netto slag</th>
+                <th class="green">Golf pts</th>
+              </tr></thead>
+              <tbody><tr>
+                <td>${hcp}</td>
+                <td>${slope}</td>
+                <td class="stt-calc">${netslag}</td>
+                <td class="stt-calc green">${gpts}</td>
+              </tr></tbody>
+            </table>
+          </div>
+        </div>`;
+    }).join('');
+
+    el.innerHTML = `<main style="padding:16px 14px 60px;max-width:900px;margin:0 auto">
+      <h2 style="margin-bottom:16px;font-size:18px">4-Man Scramble</h2>
+      ${cards}
+    </main>`;
+  });
 }
 
 // ══════════════════════════════════════════════
@@ -1996,9 +2069,22 @@ function onInput(ki, pi, field, el) {
   render();
 }
 
+function onKlan4ManScramble(ki, el) {
+  const raw = el.value.trim();
+  const gross = parseInt2(raw);
+  state.klaner[ki].klan_scramble_gross = gross;
+  el.classList.toggle('filled', gross !== null && raw !== '');
+  markUnsaved();
+  render();
+}
+
 function onSkytteRound(ki, pi, ri, el) {
   const raw = el.value.trim();
-  const parsed = parseInt2(raw);
+  let parsed = parseInt2(raw);
+  if (parsed !== null && parsed > SKYTTE_ROUND_MAX) {
+    parsed = SKYTTE_ROUND_MAX;
+    el.value = String(parsed);
+  }
   if (!state.klaner[ki].spelare[pi].skytte_rounds)
     state.klaner[ki].spelare[pi].skytte_rounds = [null, null, null, null];
   state.klaner[ki].spelare[pi].skytte_rounds[ri] = parsed;
@@ -2028,11 +2114,14 @@ async function loadData() {
   const resp = await fetch('/api/data');
   state = await resp.json();
 
-  // Init skytte_rounds if missing (backwards compat)
+  // Init missing fields (backwards compat)
   if (state.klaner) {
-    state.klaner.forEach(klan => klan.spelare.forEach(p => {
-      if (!p.skytte_rounds) p.skytte_rounds = [null, null, null, null];
-    }));
+    state.klaner.forEach(klan => {
+      if (klan.klan_scramble_gross === undefined) klan.klan_scramble_gross = null;
+      klan.spelare.forEach(p => {
+        if (!p.skytte_rounds) p.skytte_rounds = [null, null, null, null];
+      });
+    });
   }
 
   document.getElementById('course-name-input').value = state.course.name || '';

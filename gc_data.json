@@ -21,6 +21,7 @@
           "spelare": [
             {
               "dart": 39,
+              "gc_name": "Sir David",
               "hcp": 12.1,
               "namn": "David Selander",
               "skytte": 12,
@@ -28,6 +29,7 @@
             },
             {
               "dart": 42,
+              "gc_name": "Sir Rustas",
               "hcp": 14.7,
               "namn": "Joacim Rustas",
               "skytte": 17,
@@ -58,12 +60,13 @@
             {
               "dart": 42,
               "hcp": 8,
-              "namn": "Mikael Nordin",
+              "namn": "Andreas Milander",
               "skytte": 10,
               "slag": 92
             },
             {
               "dart": 42,
+              "gc_name": "Sir Mange",
               "hcp": 9.5,
               "namn": "Magnus Norrby",
               "skytte": 13,
@@ -78,6 +81,7 @@
             },
             {
               "dart": 43,
+              "gc_name": "Sir Jonas",
               "hcp": 22.9,
               "namn": "Jonas Cronfalk",
               "skytte": 15,
@@ -107,6 +111,7 @@
             },
             {
               "dart": 41,
+              "gc_name": "Sir Stulle",
               "hcp": 23.8,
               "namn": "Stefan Andersson",
               "skytte": 4,
@@ -114,6 +119,7 @@
             },
             {
               "dart": 28,
+              "gc_name": "Sir Filip",
               "hcp": 24.4,
               "namn": "Filip Lyrinder",
               "skytte": 13,
@@ -253,31 +259,61 @@
       "spelare": [
         {
           "dart": 50,
+          "gc_name": "Sir David",
+          "golf_id": "900320-050",
           "hcp": 15.2,
           "namn": "David Selander",
           "skytte": 10,
-          "slag": 89
+          "slag": 90,
+          "skytte_rounds": [
+            6,
+            0,
+            5,
+            1
+          ]
         },
         {
           "dart": 50,
+          "gc_name": "Sir Rustas",
+          "golf_id": "880816-048",
           "hcp": 14.6,
           "namn": "Joacim Rustas",
           "skytte": 10,
-          "slag": 88
+          "slag": 88,
+          "skytte_rounds": [
+            5,
+            1,
+            1,
+            1
+          ]
         },
         {
           "dart": 50,
+          "golf_id": "900823-014",
           "hcp": 7.6,
           "namn": "Andreas Milander",
           "skytte": 10,
-          "slag": 80
+          "slag": 80,
+          "skytte_rounds": [
+            4,
+            2,
+            2,
+            1
+          ]
         },
         {
           "dart": 50,
+          "golf_id": "880410-052",
           "hcp": 19.7,
           "namn": "Anton Rydberg",
           "skytte": 10,
-          "slag": 94
+          "slag": 94,
+          "skytte_rounds": [
+            3,
+            3,
+            3,
+            1
+          ]
         }
       ]
     },
@@ -289,31 +325,61 @@
       "spelare": [
         {
           "dart": 50,
+          "golf_id": "920101-060",
           "hcp": 18.8,
           "namn": "Calle Norlelius",
           "skytte": 10,
-          "slag": 93
+          "slag": 93,
+          "skytte_rounds": [
+            2,
+            4,
+            5,
+            1
+          ]
         },
         {
           "dart": 50,
+          "gc_name": "Sir Mange",
+          "golf_id": "861006-012",
           "hcp": 10,
           "namn": "Magnus Norrby",
           "skytte": 10,
-          "slag": 82
+          "slag": 82,
+          "skytte_rounds": [
+            1,
+            5,
+            4,
+            1
+          ]
         },
         {
           "dart": 50,
+          "golf_id": "870702-017",
           "hcp": 10.9,
           "namn": "Christopher Eklund",
           "skytte": 10,
-          "slag": 84
+          "slag": 84,
+          "skytte_rounds": [
+            0,
+            1,
+            5,
+            1
+          ]
         },
         {
           "dart": 50,
+          "gc_name": "Sir Jonas",
+          "golf_id": "860801-040",
           "hcp": 22.6,
           "namn": "Jonas Cronfalk",
           "skytte": 10,
-          "slag": 97
+          "slag": 97,
+          "skytte_rounds": [
+            1,
+            2,
+            2,
+            1
+          ]
         }
       ]
     },
@@ -325,69 +391,135 @@
       "spelare": [
         {
           "dart": 50,
+          "golf_id": "820222-043",
           "hcp": 18.3,
           "namn": "Michael Möllerfält",
           "skytte": 10,
-          "slag": 92
+          "slag": 92,
+          "skytte_rounds": [
+            2,
+            3,
+            2,
+            1
+          ]
         },
         {
           "dart": 50,
+          "golf_id": "870515-038",
           "hcp": 22.5,
           "namn": "Sebastian Thurfjell",
           "skytte": 10,
-          "slag": 97
+          "slag": 97,
+          "skytte_rounds": [
+            3,
+            4,
+            8,
+            1
+          ]
         },
         {
           "dart": 50,
+          "gc_name": "Sir Stulle",
+          "golf_id": "820822-001",
           "hcp": 23.8,
           "namn": "Stefan Andersson",
           "skytte": 10,
-          "slag": 98
+          "slag": 98,
+          "skytte_rounds": [
+            4,
+            5,
+            0,
+            1
+          ]
         },
         {
           "dart": 50,
+          "gc_name": "Sir Filip",
+          "golf_id": "840512-019",
           "hcp": 25,
           "namn": "Filip Lyrinder",
           "skytte": 10,
-          "slag": 100
+          "slag": 100,
+          "skytte_rounds": [
+            5,
+            6,
+            5,
+            1
+          ]
         }
       ]
     }
   ],
-  "scramble_enabled": true,
   "scramble_course": "nassjo_gk",
+  "scramble_enabled": true,
   "scramble_matches": [
     {
       "id": "selander_norrby",
       "klanA": "selander",
       "klanB": "norrby",
-      "playersA": [null, null],
-      "playersB": [null, null],
+      "playersA": [
+        null,
+        null
+      ],
+      "playersB": [
+        null,
+        null
+      ],
       "rounds": [
-        {"scoreA": null, "scoreB": null},
-        {"scoreA": null, "scoreB": null}
+        {
+          "scoreA": null,
+          "scoreB": null
+        },
+        {
+          "scoreA": null,
+          "scoreB": null
+        }
       ]
     },
     {
       "id": "selander_lyrinder",
       "klanA": "selander",
       "klanB": "lyrinder",
-      "playersA": [null, null],
-      "playersB": [null, null],
+      "playersA": [
+        null,
+        null
+      ],
+      "playersB": [
+        null,
+        null
+      ],
       "rounds": [
-        {"scoreA": null, "scoreB": null},
-        {"scoreA": null, "scoreB": null}
+        {
+          "scoreA": null,
+          "scoreB": null
+        },
+        {
+          "scoreA": null,
+          "scoreB": null
+        }
       ]
     },
     {
       "id": "norrby_lyrinder",
       "klanA": "norrby",
       "klanB": "lyrinder",
-      "playersA": [null, null],
-      "playersB": [null, null],
+      "playersA": [
+        null,
+        null
+      ],
+      "playersB": [
+        null,
+        null
+      ],
       "rounds": [
-        {"scoreA": null, "scoreB": null},
-        {"scoreA": null, "scoreB": null}
+        {
+          "scoreA": null,
+          "scoreB": null
+        },
+        {
+          "scoreA": null,
+          "scoreB": null
+        }
       ]
     }
   ],

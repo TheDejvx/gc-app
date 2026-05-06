@@ -879,13 +879,16 @@ function nassjoSpelHcp(hcpIdx) {
   return Math.round(hcpIdx * (NASSJO_GK.slope / 113) + (NASSJO_GK.cr - NASSJO_GK.par));
 }
 
-// SGF 2-man scramble: 18h team HCP → halved for 9h (to nearest 0.5)
-function scrambleTeamHcp9(hcpA, hcpB) {
-  const sa = nassjoSpelHcp(hcpA), sb = nassjoSpelHcp(hcpB);
-  if (sa === null || sb === null) return null;
-  const lo = Math.min(sa, sb), hi = Math.max(sa, sb);
-  const team18 = Math.round(lo * 0.5 + hi * 0.2);
-  return Math.round(team18 / 2 * 2) / 2;
+// SGF 2-man scramble 9h team HCP
+// Nässjö SI: back 9 has odd SIs (1,3,5…17), front 9 has even SIs (2,4,6…18)
+// → back gets ceil(H/2) strokes, front gets floor(H/2)
+function scrambleTeamHcp9(hcpA, hcpB, roundNum) {
+  const h18a = nassjoSpelHcp(hcpA), h18b = nassjoSpelHcp(hcpB);
+  if (h18a === null || h18b === null) return null;
+  const toNine = h => roundNum === 2 ? Math.ceil(h / 2) : Math.floor(h / 2);
+  const lo = Math.min(toNine(h18a), toNine(h18b));
+  const hi = Math.max(toNine(h18a), toNine(h18b));
+  return Math.round(lo * 0.5 + hi * 0.2);
 }
 
 function scrambleRoundResult(scoreA, scoreB, hcpA, hcpB) {
@@ -998,10 +1001,11 @@ function deriveData(data) {
       const pB = match.playersB || [null, null];
       const hA = [getH(kA, pA[0]), getH(kA, pA[1])];
       const hB = [getH(kB, pB[0]), getH(kB, pB[1])];
-      const thA = (hA[0] !== null && hA[1] !== null) ? scrambleTeamHcp9(hA[0], hA[1]) : null;
-      const thB = (hB[0] !== null && hB[1] !== null) ? scrambleTeamHcp9(hB[0], hB[1]) : null;
       let totA = 0, totB = 0, hasAny = false;
-      (match.rounds || []).forEach(r => {
+      (match.rounds || []).forEach((r, ri) => {
+        const roundNum = ri + 1; // 1 = front 9, 2 = back 9
+        const thA = (hA[0] !== null && hA[1] !== null) ? scrambleTeamHcp9(hA[0], hA[1], roundNum) : null;
+        const thB = (hB[0] !== null && hB[1] !== null) ? scrambleTeamHcp9(hB[0], hB[1], roundNum) : null;
         const res = scrambleRoundResult(parseInt2(r.scoreA), parseInt2(r.scoreB), thA, thB);
         if (res.ptsA !== null) { totA += res.ptsA; totB += res.ptsB; hasAny = true; }
       });

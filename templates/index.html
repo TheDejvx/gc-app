@@ -1105,7 +1105,7 @@ function buildSubTabs() {
     { id: 'scramble4',   label: '🏌️ 4-Man Scramble' },
     { id: 'skytte',      label: '🔫 Skytte' },
     { id: 'dart',        label: '🎯 Dart' },
-    { id: 'scramble',    label: '⛳ GC1 Scramble' },
+    { id: 'scramble',    label: '⛳ 2v2 Scramble' },
   ];
   bar.innerHTML = tabs.map(t =>
     `<button class="subtab-btn${t.id === activeSubTab ? ' active' : ''}"
@@ -1381,7 +1381,7 @@ function render() {
   if (!d) return;
   if (activeSubTab === 'oversikt') {
     renderKlaner(d);
-    renderScramble(d, 'scramble-section');
+    renderScrambleReadonly(d, 'scramble-section');
     renderResults(d);
   } else if (activeSubTab === 'golf') {
     renderGolfTab(d);
@@ -1979,6 +1979,109 @@ function renderFyrMannScrambleTab(d) {
 }
 
 // ══════════════════════════════════════════════
+//  SCRAMBLE READONLY (Översikt)
+// ══════════════════════════════════════════════
+function renderScrambleReadonly(d, targetId) {
+  const el = document.getElementById(targetId);
+  if (!el) return;
+  if (!state.scramble_enabled || !state.scramble_matches) { el.innerHTML = ''; return; }
+
+  const klanMap = {};
+  d.klaner.forEach(k => { klanMap[k.id] = k; });
+
+  function getHcp(klan, name) {
+    if (!name) return null;
+    const p = klan.spelare.find(s => s.namn === name);
+    return p ? parseNum(p.hcp) : null;
+  }
+
+  function ptsChip(pts) {
+    if (pts === null) return `<span class="pts-chip">–</span>`;
+    const cls = pts === 3 ? 'win' : pts === 0 ? 'loss' : 'draw';
+    return `<span class="pts-chip ${cls}">${fmtN(pts, 1)}</span>`;
+  }
+
+  const cardsHtml = state.scramble_matches.map((match) => {
+    const kA = klanMap[match.klanA], kB = klanMap[match.klanB];
+    if (!kA || !kB) return '';
+
+    const pA = match.playersA || [null, null];
+    const pB = match.playersB || [null, null];
+    const hcpA = [getHcp(kA, pA[0]), getHcp(kA, pA[1])];
+    const hcpB = [getHcp(kB, pB[0]), getHcp(kB, pB[1])];
+    const teamHcpA = (hcpA[0] !== null && hcpA[1] !== null) ? scrambleTeamHcp9(hcpA[0], hcpA[1]) : null;
+    const teamHcpB = (hcpB[0] !== null && hcpB[1] !== null) ? scrambleTeamHcp9(hcpB[0], hcpB[1]) : null;
+
+    const rounds = match.rounds || [{scoreA:null,scoreB:null},{scoreA:null,scoreB:null}];
+    const results = rounds.map(r =>
+      scrambleRoundResult(parseInt2(r.scoreA), parseInt2(r.scoreB), teamHcpA, teamHcpB));
+    const hasAny = results.some(r => r.ptsA !== null);
+    const totA = results.reduce((s, r) => r.ptsA !== null ? s + r.ptsA : s, 0);
+    const totB = results.reduce((s, r) => r.ptsB !== null ? s + r.ptsB : s, 0);
+
+    const teamHtml = (klan, players, teamHcp) => `
+      <div class="scramble-team">
+        <div class="scramble-team-heading">
+          <span class="klan-dot" style="background:${klan.color}"></span>${klan.name}
+        </div>
+        ${players.map((n, i) => `
+          <div style="font-size:13px;padding:4px 0;color:${n ? '#333' : '#bbb'}">
+            ${n || `Spelare ${i+1} ej vald`}
+          </div>`).join('')}
+        <div class="team-hcp-row">
+          <span class="hcp-lbl">Team HCP (9h)</span>
+          <span class="hcp-val">${teamHcp !== null ? fmtN(teamHcp, 1) : '–'}</span>
+        </div>
+      </div>`;
+
+    const roundsHtml = rounds.map((r, ri) => {
+      const res = results[ri];
+      return `
+        <div class="scramble-round-row">
+          <span class="scramble-round-label">Runda ${ri + 1}</span>
+          <span style="text-align:center;font-size:17px;font-weight:700;color:${r.scoreA !== null ? '#333' : '#ccc'}">${r.scoreA ?? '–'}</span>
+          <span class="scramble-vs-lbl">vs</span>
+          <span style="text-align:center;font-size:17px;font-weight:700;color:${r.scoreB !== null ? '#333' : '#ccc'}">${r.scoreB ?? '–'}</span>
+          <div class="scramble-pts-pair">${ptsChip(res.ptsA)}${ptsChip(res.ptsB)}</div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="scramble-matchup-card">
+        <div class="scramble-matchup-header">
+          <span class="klan-dot" style="background:${kA.color}"></span>${kA.name}
+          <span class="vs-sep">vs</span>
+          <span class="klan-dot" style="background:${kB.color}"></span>${kB.name}
+        </div>
+        <div class="scramble-teams-row">
+          ${teamHtml(kA, pA, teamHcpA)}
+          ${teamHtml(kB, pB, teamHcpB)}
+        </div>
+        <div class="scramble-rounds-section">${roundsHtml}</div>
+        <div class="scramble-total-bar">
+          <div class="total-bar-side">
+            <span class="klan-dot" style="background:${kA.color}"></span>
+            <span class="total-bar-pts" style="color:${kA.color}">${hasAny ? fmtN(totA,1) : '–'}</span>
+            <span class="total-bar-lbl">poäng</span>
+          </div>
+          <div class="total-bar-vs">Totalt</div>
+          <div class="total-bar-side right">
+            <span class="total-bar-lbl">poäng</span>
+            <span class="total-bar-pts" style="color:${kB.color}">${hasAny ? fmtN(totB,1) : '–'}</span>
+            <span class="klan-dot" style="background:${kB.color}"></span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="scramble-section">
+      <div class="scramble-section-title">⛳ 2v2 Scramble · Nässjö GK</div>
+      ${cardsHtml}
+    </div>`;
+}
+
+// ══════════════════════════════════════════════
 //  SCRAMBLE RENDER
 // ══════════════════════════════════════════════
 function renderScramble(d, targetId) {
@@ -2116,7 +2219,7 @@ function renderScramble(d, targetId) {
 
   el.innerHTML = `
     <div class="scramble-section">
-      <div class="scramble-section-title">⛳ GC1 – 2v2 Scramble · Nässjö GK</div>
+      <div class="scramble-section-title">⛳ 2v2 Scramble · Nässjö GK</div>
       ${cardsHtml}
     </div>`;
 

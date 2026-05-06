@@ -985,8 +985,8 @@ function deriveData(data) {
         const shcp  = getSpelhandicap(hcp, sk);
         const golf  = golfPts(slag, shcp, par);
         const dpts  = dartPts(dart);
-        const tot   = (golf !== null && sky !== null && dpts !== null)
-                      ? golf + sky + dpts : null;
+        const totParts = [golf, sky, dpts].filter(x => x !== null);
+        const tot   = totParts.length > 0 ? totParts.reduce((a,b) => a+b, 0) : null;
         const skyRounds = p.skytte_rounds || [null, null, null, null];
         return { ...p, _hcp: hcp, _slag: slag, _sky: sky, _sky_rounds: skyRounds,
                  _dart: dart, _shcp: shcp, _golf: golf, _dpts: dpts, _tot: tot };

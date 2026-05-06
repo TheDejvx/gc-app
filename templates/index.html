@@ -2792,6 +2792,29 @@ window.addEventListener('beforeunload', e => {
 loadData();
 
 // ══════════════════════════════════════════════
+//  AUTO POLL (sync between multiple users)
+// ══════════════════════════════════════════════
+setInterval(async () => {
+  if (unsaved) return;                          // don't overwrite local edits
+  if (document.hidden) return;                  // skip when tab is in background
+  try {
+    const resp = await fetch('/api/data');
+    const fresh = await resp.json();
+    if (JSON.stringify(fresh) === JSON.stringify(state)) return;
+    state = fresh;
+    // Re-apply migrations in case new data is missing fields
+    if (state.locked === undefined) state.locked = false;
+    if (state.history) state.history.forEach(h => { if (h.locked === undefined) h.locked = true; });
+    buildTabs();
+    buildSubTabs();
+    updateSubtitle();
+    applyLockUI();
+    render();
+    if (activeTab !== 'current') renderHistoryView(activeTab);
+  } catch(e) { /* silent — server might be momentarily unreachable */ }
+}, 10000);
+
+// ══════════════════════════════════════════════
 //  WEATHER
 // ══════════════════════════════════════════════
 const WEATHER_LAT  = 57.8167;

@@ -2727,6 +2727,21 @@ async function loadData() {
   if (state.mat_och_dryck && !state.mat_och_dryck.ansvarig) {
     state.mat_och_dryck.ansvarig = { frukost: null, lunch: null, middag: null }; _migrated = true;
   }
+  if (state.mat_och_dryck?.mat?.middag?.length === 0) {
+    state.mat_och_dryck.mat.middag = [
+      { vara: 'Hamburgare frysta',  antal: '32',      klar: false },
+      { vara: 'Hamburgerbröd',      antal: '24',      klar: false },
+      { vara: 'Cheddar ost',        antal: '3 paket', klar: false },
+      { vara: 'Tomater',            antal: '6',       klar: false },
+      { vara: 'Gula lökar',         antal: '4',       klar: false },
+      { vara: 'Jalapenos i burk',   antal: '',        klar: false },
+      { vara: 'Ketchup',            antal: '',        klar: false },
+      { vara: 'Senap',              antal: '',        klar: false },
+      { vara: 'Hamburgerdressing',  antal: '',        klar: false },
+      { vara: 'Hotsauce',           antal: '',        klar: false },
+    ];
+    _migrated = true;
+  }
   if (state.history) {
     state.history.forEach(h => { if (h.locked === undefined) { h.locked = true; _migrated = true; } });
   }

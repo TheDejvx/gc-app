@@ -6,6 +6,219 @@
   },
   "history": [
     {
+      "year": 2026,
+      "course": {
+        "name": "Eksjö GK",
+        "par": 72,
+        "slope_table": "eksjo_gk"
+      },
+      "klaner": [
+        {
+          "color": "#2e7d32",
+          "id": "selander",
+          "klan_scramble_gross": null,
+          "klan_slag": 64,
+          "name": "Klan Selander",
+          "spelare": [
+            {
+              "dart": 50,
+              "gc_name": "Sir David",
+              "golf_id": "900320-050",
+              "hcp": 15.2,
+              "namn": "David Selander",
+              "skytte": 10,
+              "skytte_rounds": [
+                6,
+                0,
+                5,
+                1
+              ],
+              "slag": 90
+            },
+            {
+              "dart": 50,
+              "gc_name": "Sir Rustas",
+              "golf_id": "880816-048",
+              "hcp": 14.6,
+              "namn": "Joacim Rustas",
+              "skytte": 10,
+              "skytte_rounds": [
+                5,
+                1,
+                1,
+                1
+              ],
+              "slag": 88
+            },
+            {
+              "dart": 50,
+              "golf_id": "900823-014",
+              "hcp": 7.6,
+              "namn": "Andreas Milander",
+              "skytte": 10,
+              "skytte_rounds": [
+                4,
+                2,
+                2,
+                1
+              ],
+              "slag": 80
+            },
+            {
+              "dart": 50,
+              "golf_id": "880410-052",
+              "hcp": 19.7,
+              "namn": "Anton Rydberg",
+              "skytte": 10,
+              "skytte_rounds": [
+                3,
+                3,
+                3,
+                1
+              ],
+              "slag": 94
+            }
+          ]
+        },
+        {
+          "color": "#1565c0",
+          "id": "norrby",
+          "klan_scramble_gross": null,
+          "klan_slag": 65,
+          "name": "Klan Norrby",
+          "spelare": [
+            {
+              "dart": 50,
+              "golf_id": "920101-060",
+              "hcp": 18.8,
+              "namn": "Calle Norlelius",
+              "skytte": 10,
+              "skytte_rounds": [
+                2,
+                4,
+                5,
+                1
+              ],
+              "slag": 93
+            },
+            {
+              "dart": 50,
+              "gc_name": "Sir Mange",
+              "golf_id": "861006-012",
+              "hcp": 10,
+              "namn": "Magnus Norrby",
+              "skytte": 10,
+              "skytte_rounds": [
+                1,
+                5,
+                4,
+                1
+              ],
+              "slag": 82
+            },
+            {
+              "dart": 50,
+              "golf_id": "870702-017",
+              "hcp": 10.9,
+              "namn": "Christopher Eklund",
+              "skytte": 10,
+              "skytte_rounds": [
+                0,
+                1,
+                5,
+                1
+              ],
+              "slag": 84
+            },
+            {
+              "dart": 50,
+              "gc_name": "Sir Jonas",
+              "golf_id": "860801-040",
+              "hcp": 22.6,
+              "namn": "Jonas Cronfalk",
+              "skytte": 10,
+              "skytte_rounds": [
+                1,
+                2,
+                2,
+                1
+              ],
+              "slag": 97
+            }
+          ]
+        },
+        {
+          "color": "#b71c1c",
+          "id": "lyrinder",
+          "klan_scramble_gross": null,
+          "klan_slag": 69,
+          "name": "Klan Lyrinder",
+          "spelare": [
+            {
+              "dart": 50,
+              "golf_id": "820222-043",
+              "hcp": 18.3,
+              "namn": "Michael Möllerfält",
+              "skytte": 10,
+              "skytte_rounds": [
+                2,
+                3,
+                2,
+                1
+              ],
+              "slag": 92
+            },
+            {
+              "dart": 50,
+              "golf_id": "870515-038",
+              "hcp": 22.5,
+              "namn": "Sebastian Thurfjell",
+              "skytte": 10,
+              "skytte_rounds": [
+                3,
+                4,
+                8,
+                1
+              ],
+              "slag": 97
+            },
+            {
+              "dart": 50,
+              "gc_name": "Sir Stulle",
+              "golf_id": "820822-001",
+              "hcp": 23.8,
+              "namn": "Stefan Andersson",
+              "skytte": 10,
+              "skytte_rounds": [
+                4,
+                5,
+                0,
+                1
+              ],
+              "slag": 98
+            },
+            {
+              "dart": 50,
+              "gc_name": "Sir Filip",
+              "golf_id": "840512-019",
+              "hcp": 25,
+              "namn": "Filip Lyrinder",
+              "skytte": 10,
+              "skytte_rounds": [
+                5,
+                6,
+                5,
+                1
+              ],
+              "slag": 100
+            }
+          ]
+        }
+      ],
+      "kgolf_formula": "scramble_plus_snitt",
+      "locked": false
+    },
+    {
       "course": {
         "name": "Eksjö GK",
         "par": 72,
@@ -128,6 +341,7 @@
           ]
         }
       ],
+      "locked": true,
       "year": 2025
     },
     {
@@ -247,6 +461,7 @@
           ]
         }
       ],
+      "locked": true,
       "year": 2024
     }
   ],
@@ -254,202 +469,295 @@
     {
       "color": "#2e7d32",
       "id": "selander",
-      "klan_slag": 64,
+      "klan_scramble_gross": 69,
+      "klan_slag": null,
       "name": "Klan Selander",
       "spelare": [
         {
-          "dart": 50,
+          "dart": 39,
           "gc_name": "Sir David",
           "golf_id": "900320-050",
-          "hcp": 15.2,
+          "hcp": 12.1,
           "namn": "David Selander",
-          "skytte": 10,
-          "slag": 90,
+          "skytte": null,
           "skytte_rounds": [
-            6,
-            0,
             5,
-            1
-          ]
+            5,
+            2,
+            0
+          ],
+          "slag": 94
         },
         {
-          "dart": 50,
+          "dart": 42,
           "gc_name": "Sir Rustas",
           "golf_id": "880816-048",
-          "hcp": 14.6,
+          "hcp": 14.7,
           "namn": "Joacim Rustas",
-          "skytte": 10,
-          "slag": 88,
+          "skytte": null,
           "skytte_rounds": [
             5,
-            1,
-            1,
-            1
-          ]
+            5,
+            5,
+            2
+          ],
+          "slag": 105
         },
         {
-          "dart": 50,
+          "dart": 30,
           "golf_id": "900823-014",
-          "hcp": 7.6,
+          "hcp": 19.1,
           "namn": "Andreas Milander",
-          "skytte": 10,
-          "slag": 80,
+          "skytte": null,
           "skytte_rounds": [
-            4,
-            2,
-            2,
-            1
-          ]
+            1,
+            0,
+            5,
+            0
+          ],
+          "slag": 109
         },
         {
-          "dart": 50,
+          "dart": 40,
           "golf_id": "880410-052",
-          "hcp": 19.7,
+          "hcp": 19.9,
           "namn": "Anton Rydberg",
-          "skytte": 10,
-          "slag": 94,
+          "skytte": null,
           "skytte_rounds": [
-            3,
-            3,
-            3,
-            1
-          ]
+            5,
+            0,
+            5,
+            0
+          ],
+          "slag": 111
         }
       ]
     },
     {
       "color": "#1565c0",
       "id": "norrby",
-      "klan_slag": 65,
+      "klan_scramble_gross": 65,
+      "klan_slag": null,
       "name": "Klan Norrby",
       "spelare": [
         {
-          "dart": 50,
+          "dart": 42,
           "golf_id": "920101-060",
-          "hcp": 18.8,
+          "hcp": 8,
           "namn": "Calle Norlelius",
-          "skytte": 10,
-          "slag": 93,
+          "skytte": null,
           "skytte_rounds": [
-            2,
-            4,
             5,
-            1
-          ]
+            5,
+            0,
+            0
+          ],
+          "slag": 92
         },
         {
-          "dart": 50,
+          "dart": 42,
           "gc_name": "Sir Mange",
           "golf_id": "861006-012",
-          "hcp": 10,
+          "hcp": 9.5,
           "namn": "Magnus Norrby",
-          "skytte": 10,
-          "slag": 82,
+          "skytte": null,
           "skytte_rounds": [
-            1,
             5,
-            4,
-            1
-          ]
+            5,
+            3,
+            0
+          ],
+          "slag": 88
         },
         {
-          "dart": 50,
+          "dart": 43,
           "golf_id": "870702-017",
-          "hcp": 10.9,
+          "hcp": 10.8,
           "namn": "Christopher Eklund",
-          "skytte": 10,
-          "slag": 84,
+          "skytte": null,
           "skytte_rounds": [
+            3,
             0,
-            1,
-            5,
-            1
-          ]
+            0,
+            0
+          ],
+          "slag": 87
         },
         {
-          "dart": 50,
+          "dart": 43,
           "gc_name": "Sir Jonas",
           "golf_id": "860801-040",
-          "hcp": 22.6,
+          "hcp": 22.9,
           "namn": "Jonas Cronfalk",
-          "skytte": 10,
-          "slag": 97,
+          "skytte": null,
           "skytte_rounds": [
-            1,
-            2,
-            2,
-            1
-          ]
+            5,
+            0,
+            5,
+            5
+          ],
+          "slag": 108
         }
       ]
     },
     {
       "color": "#b71c1c",
       "id": "lyrinder",
-      "klan_slag": 69,
+      "klan_scramble_gross": 75,
+      "klan_slag": null,
       "name": "Klan Lyrinder",
       "spelare": [
         {
-          "dart": 50,
+          "dart": 40,
           "golf_id": "820222-043",
-          "hcp": 18.3,
+          "hcp": 17.7,
           "namn": "Michael Möllerfält",
-          "skytte": 10,
-          "slag": 92,
+          "skytte": null,
           "skytte_rounds": [
+            5,
+            5,
             2,
-            3,
-            2,
-            1
-          ]
+            0
+          ],
+          "slag": 100
         },
         {
-          "dart": 50,
+          "dart": 40,
           "golf_id": "870515-038",
-          "hcp": 22.5,
+          "hcp": 22.2,
           "namn": "Sebastian Thurfjell",
-          "skytte": 10,
-          "slag": 97,
+          "skytte": null,
           "skytte_rounds": [
-            3,
             4,
-            8,
-            1
-          ]
+            0,
+            0,
+            0
+          ],
+          "slag": 104
         },
         {
-          "dart": 50,
+          "dart": 41,
           "gc_name": "Sir Stulle",
           "golf_id": "820822-001",
           "hcp": 23.8,
           "namn": "Stefan Andersson",
-          "skytte": 10,
-          "slag": 98,
+          "skytte": null,
           "skytte_rounds": [
             4,
-            5,
             0,
-            1
-          ]
+            0,
+            0
+          ],
+          "slag": 109
         },
         {
-          "dart": 50,
+          "dart": 28,
           "gc_name": "Sir Filip",
           "golf_id": "840512-019",
-          "hcp": 25,
+          "hcp": 24.4,
           "namn": "Filip Lyrinder",
-          "skytte": 10,
-          "slag": 100,
+          "skytte": null,
           "skytte_rounds": [
             5,
-            6,
+            3,
             5,
-            1
-          ]
+            0
+          ],
+          "slag": 120
         }
       ]
     }
   ],
+  "locked": false,
+  "mat_och_dryck": {
+    "dryck": {
+      "flak_storlek": 24,
+      "ol": [
+        {
+          "antal_flak": 2,
+          "namn": "The bear",
+          "pris": 10.9
+        },
+        {
+          "antal_flak": 2,
+          "namn": "Tuborg",
+          "pris": 12.4
+        },
+        {
+          "antal_flak": 2,
+          "namn": "Ey Bro",
+          "pris": 10.9
+        },
+        {
+          "antal_flak": 2,
+          "namn": "Breznak",
+          "pris": 13.9
+        },
+        {
+          "antal_flak": 2,
+          "namn": "Piston head",
+          "pris": 12.9
+        },
+        {
+          "antal_flak": 4,
+          "namn": "Norrlands ljus",
+          "pris": 14.5
+        },
+        {
+          "antal_flak": 1,
+          "namn": "Briska Jordgubb",
+          "pris": 16.5
+        },
+        {
+          "antal_flak": 1,
+          "namn": "Briska Fläder",
+          "pris": 16.5
+        },
+        {
+          "antal_flak": 1,
+          "namn": "Rekorderlig Päron",
+          "pris": 15.9
+        },
+        {
+          "antal_flak": 1,
+          "namn": "Blandat",
+          "pris": 17
+        }
+      ],
+      "ovrigt": [
+        {
+          "antal": 2,
+          "namn": "Barone",
+          "pris": 199
+        },
+        {
+          "antal": 2,
+          "namn": "Black velvet",
+          "pris": 243
+        },
+        {
+          "antal": 12,
+          "namn": "Campo Viejo",
+          "pris": 97
+        },
+        {
+          "antal": 1,
+          "namn": "Philippe De Nantheuil",
+          "pris": 259
+        },
+        {
+          "antal": 1,
+          "namn": "Beaumont des Crayères",
+          "pris": 299
+        }
+      ]
+    },
+    "mat": {
+      "frukost": [],
+      "lunch": [],
+      "middag": []
+    }
+  },
   "scramble_course": "nassjo_gk",
   "scramble_enabled": true,
   "scramble_matches": [
@@ -523,34 +831,5 @@
       ]
     }
   ],
-  "year": 2026,
-  "mat_och_dryck": {
-    "dryck": {
-      "flak_storlek": 24,
-      "ol": [
-        { "namn": "The bear",          "pris": 10.9, "antal_flak": 2 },
-        { "namn": "Tuborg",            "pris": 12.4, "antal_flak": 2 },
-        { "namn": "Ey Bro",            "pris": 10.9, "antal_flak": 2 },
-        { "namn": "Breznak",           "pris": 13.9, "antal_flak": 2 },
-        { "namn": "Piston head",       "pris": 12.9, "antal_flak": 2 },
-        { "namn": "Norrlands ljus",    "pris": 14.5, "antal_flak": 4 },
-        { "namn": "Briska Jordgubb",   "pris": 16.5, "antal_flak": 1 },
-        { "namn": "Briska Fläder",     "pris": 16.5, "antal_flak": 1 },
-        { "namn": "Rekorderlig Päron", "pris": 15.9, "antal_flak": 1 },
-        { "namn": "Blandat",           "pris": 17.0, "antal_flak": 1 }
-      ],
-      "ovrigt": [
-        { "namn": "Barone",                 "pris": 199, "antal": 2 },
-        { "namn": "Black velvet",           "pris": 243, "antal": 2 },
-        { "namn": "Campo Viejo",            "pris": 97,  "antal": 12 },
-        { "namn": "Philippe De Nantheuil",  "pris": 259, "antal": 1 },
-        { "namn": "Beaumont des Crayères",  "pris": 299, "antal": 1 }
-      ]
-    },
-    "mat": {
-      "frukost": [],
-      "lunch":   [],
-      "middag":  []
-    }
-  }
+  "year": 2027
 }

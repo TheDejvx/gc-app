@@ -2742,6 +2742,23 @@ async function loadData() {
     ];
     _migrated = true;
   }
+  if (!state._middag_bolognese) {
+    (state.mat_och_dryck?.mat?.middag || []).push(
+      { vara: 'Köttfärs',              antal: '3 kg',    klar: false },
+      { vara: 'Spagetti',              antal: '3 paket', klar: false },
+      { vara: 'Gula lökar',            antal: '6',       klar: false },
+      { vara: 'Vitlök',               antal: '2',       klar: false },
+      { vara: 'Tomatpuré',             antal: '1',       klar: false },
+      { vara: 'Krossade tomater',      antal: '5 paket', klar: false },
+      { vara: 'Matolja',              antal: '1',       klar: false },
+      { vara: 'Basilika färsk',        antal: '',        klar: false },
+      { vara: 'Oregano',              antal: '',        klar: false },
+      { vara: 'Paprikapulver',         antal: '',        klar: false },
+      { vara: 'Färdigriven parmesan',  antal: '',        klar: false }
+    );
+    state._middag_bolognese = true;
+    _migrated = true;
+  }
   if (state.history) {
     state.history.forEach(h => { if (h.locked === undefined) { h.locked = true; _migrated = true; } });
   }

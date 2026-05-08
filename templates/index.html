@@ -818,6 +818,12 @@
     .md-del-btn:hover { color: #e53935; background: #fff0f0; }
     .md-add-btn { margin-top: 10px; background: #f5f5f5; border: 1.5px dashed #ccc; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 700; color: #888; cursor: pointer; width: 100%; }
     .md-add-btn:hover { background: #e8f5e9; border-color: #66bb6a; color: #2e7d32; }
+    .md-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; }
+    .md-section-header .md-heading { margin-bottom: 0; }
+    .md-ansvarig { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .md-ansvarig-lbl { font-size: 11px; color: #999; font-weight: 600; text-transform: uppercase; }
+    .md-ansvarig-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .md-ansvarig-sel { font-size: 12px; padding: 4px 8px; border: 1.5px solid #ddd; border-radius: 6px; background: white; cursor: pointer; max-width: 140px; }
     .md-summary-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }
     .md-sum-lbl { font-size: 13px; font-weight: 700; color: #666; }
     .md-sum-val { font-size: 22px; font-weight: 900; color: #2e7d32; }
@@ -2437,6 +2443,12 @@ function renderMatOchDryck() {
 
   function matListHtml(key, label) {
     const items = matLists[key] || [];
+    const ansvarigId = md.ansvarig?.[key] || '';
+    const ansvarigKlan = (state.klaner || []).find(k => k.id === ansvarigId);
+    const klanOptions = (state.klaner || []).map(k =>
+      `<option value="${k.id}" ${ansvarigId === k.id ? 'selected' : ''}>${k.name}</option>`
+    ).join('');
+    const dot = ansvarigKlan ? `<span class="md-ansvarig-dot" style="background:${ansvarigKlan.color}"></span>` : '';
     const rows = items.map((r, i) => `
       <div class="mat-row">
         <input type="checkbox" class="mat-check" ${r.klar ? 'checked' : ''} onchange="onMatKlar('${key}',${i},this.checked)">
@@ -2446,7 +2458,16 @@ function renderMatOchDryck() {
       </div>`).join('');
     return `
       <section class="md-section">
-        <h2 class="md-heading">${label}</h2>
+        <div class="md-section-header">
+          <h2 class="md-heading">${label}</h2>
+          <div class="md-ansvarig">
+            ${dot}
+            <select class="md-ansvarig-sel" onchange="onMdAnsvarig('${key}',this.value)">
+              <option value="">– Ansvarig klan –</option>
+              ${klanOptions}
+            </select>
+          </div>
+        </div>
         <div class="mat-list">${rows}</div>
         <button class="md-add-btn" onclick="onMatAdd('${key}')">+ Lägg till vara</button>
       </section>`;
@@ -2523,6 +2544,11 @@ function onMatDel(key, idx) {
 }
 function onMatAdd(key) {
   state.mat_och_dryck.mat[key].push({ vara: '', antal: '', klar: false });
+  markUnsaved(); render();
+}
+function onMdAnsvarig(key, val) {
+  if (!state.mat_och_dryck.ansvarig) state.mat_och_dryck.ansvarig = {};
+  state.mat_och_dryck.ansvarig[key] = val || null;
   markUnsaved(); render();
 }
 
@@ -2698,6 +2724,9 @@ async function loadData() {
     _migrated = true;
   }
   if (state.locked === undefined) { state.locked = false; _migrated = true; }
+  if (state.mat_och_dryck && !state.mat_och_dryck.ansvarig) {
+    state.mat_och_dryck.ansvarig = { frukost: null, lunch: null, middag: null }; _migrated = true;
+  }
   if (state.history) {
     state.history.forEach(h => { if (h.locked === undefined) { h.locked = true; _migrated = true; } });
   }

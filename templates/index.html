@@ -2742,6 +2742,21 @@ async function loadData() {
     ];
     _migrated = true;
   }
+  if (!state._frukost_seeded) {
+    (state.mat_och_dryck?.mat?.frukost || []).push(
+      { vara: 'Ägg',                          antal: '100',     klar: false },
+      { vara: 'Pågenlimpa (eller mot. bröd)', antal: '4',       klar: false },
+      { vara: 'Yogurt',                        antal: '2 paket', klar: false },
+      { vara: 'Apelsinjuice 2L',               antal: '10',      klar: false },
+      { vara: 'Falukorv',                      antal: '2',       klar: false },
+      { vara: 'Kaffe',                         antal: '3 paket', klar: false },
+      { vara: 'Resorb',                        antal: '10 rör',  klar: false },
+      { vara: 'Skinka',                        antal: '1 paket', klar: false },
+      { vara: 'Pepparsalami',                  antal: '1 paket', klar: false }
+    );
+    state._frukost_seeded = true;
+    _migrated = true;
+  }
   if (!state._middag_bolognese) {
     (state.mat_och_dryck?.mat?.middag || []).push(
       { vara: 'Köttfärs',              antal: '3 kg',    klar: false },

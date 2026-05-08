@@ -59,6 +59,12 @@ def _seed_db(db, data):
         print('Seeded MongoDB from gc_data.json')
 
 
+@app.route('/api/health')
+def health():
+    db = get_db()
+    return jsonify({'db': 'mongodb' if db is not None else 'file'})
+
+
 @app.route('/')
 def index():
     return render_template('index.html')

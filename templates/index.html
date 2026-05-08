@@ -843,6 +843,7 @@
     <div class="sub" id="header-sub">Laddar…</div>
   </div>
   <div class="spacer"></div>
+  <span id="db-status" title="Databasstatus" style="font-size:11px;opacity:0.7;flex-shrink:0"></span>
   <span id="save-status"></span>
   <button id="new-year-btn" onclick="newYear()" title="Lägg till nytt år">+ Nytt år</button>
   <button id="lock-btn" onclick="toggleLock()" title="Lås/lås upp år">🔓</button>
@@ -2602,7 +2603,9 @@ function markUnsaved() {
         unsaved = false;
         document.getElementById('save-status').textContent = '';
       }
-    } catch(e) { /* silent — manual Spara still available */ }
+    } catch(e) {
+      showToast('⚠️ Autosparning misslyckades – tryck Spara', true);
+    }
   }, 1500);
 }
 
@@ -2870,7 +2873,23 @@ window.addEventListener('beforeunload', e => {
   if (unsaved) { e.preventDefault(); e.returnValue = ''; }
 });
 
+async function checkDbStatus() {
+  try {
+    const r = await fetch('/api/health');
+    const j = await r.json();
+    const el = document.getElementById('db-status');
+    if (!el) return;
+    if (j.db === 'mongodb') {
+      el.textContent = '🟢 MongoDB';
+    } else {
+      el.textContent = '🔴 Fil (data sparas ej vid redeploy!)';
+      showToast('⚠️ MongoDB ej ansluten – ändringar sparas ej vid redeploy!', true);
+    }
+  } catch(e) {}
+}
+
 loadData();
+checkDbStatus();
 
 // ══════════════════════════════════════════════
 //  AUTO POLL (sync between multiple users)

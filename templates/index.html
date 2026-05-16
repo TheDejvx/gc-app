@@ -835,6 +835,16 @@
     .mat-vara { flex: 1; }
     .mat-antal { width: 80px; }
     .mat-vara.klar { text-decoration: line-through; color: #bbb; }
+    /* ── Scoring explainer ── */
+    .scoring-explainer { background: white; border-radius: 14px; padding: 20px 20px 16px; margin: 14px 14px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+    .scoring-explainer-title { font-size: 15px; font-weight: 900; color: #1a2e1a; margin: 0 0 14px; }
+    .scoring-explainer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+    @media (max-width: 700px) { .scoring-explainer-grid { grid-template-columns: 1fr; } }
+    .se-block { background: #f7f9f7; border-radius: 10px; padding: 12px 14px; border-left: 3px solid #2e7d32; }
+    .se-heading { font-size: 12px; font-weight: 800; color: #2e7d32; margin-bottom: 4px; }
+    .se-formula { font-size: 13px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+    .se-note { font-size: 11px; color: #888; }
+    .se-total-row { background: #e8f5e9; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #1a2e1a; text-align: center; }
     /* ── Login modal ── */
     #login-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:2000; align-items:center; justify-content:center; }
     #login-modal-overlay.visible { display:flex; }
@@ -963,6 +973,52 @@
               <tr><td colspan="6" style="text-align:center;color:#bbb;padding:24px;font-size:13px">Fyll i poäng ovan</td></tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <div class="scoring-explainer">
+        <h2 class="scoring-explainer-title">📋 Poängsättning</h2>
+        <div class="scoring-explainer-grid">
+
+          <div class="se-block">
+            <div class="se-heading">🏌️ Golf (individuell)</div>
+            <div class="se-formula">36 + par − slag + spelHCP</div>
+            <div class="se-note">Clampad mellan 20–40 poäng. Par = 36 p.</div>
+          </div>
+
+          <div class="se-block">
+            <div class="se-heading">🎯 Skytte (individuell)</div>
+            <div class="se-formula">Summa av 4 rundor (max 5/runda)</div>
+            <div class="se-note">Max 20 poäng totalt.</div>
+          </div>
+
+          <div class="se-block">
+            <div class="se-heading">🎯 Dart (individuell)</div>
+            <div class="se-formula">Dartscore ÷ 4</div>
+            <div class="se-note">Individuell totalpoäng = Golf + Skytte + Dart.</div>
+          </div>
+
+          <div class="se-block">
+            <div class="se-heading">🏆 Klan Golf</div>
+            <div class="se-formula">4-mannascramble (netto) + snitt individuell golf</div>
+            <div class="se-note">Scramble: 36 + par − nettoscrambleslag (ingen clamp).</div>
+          </div>
+
+          <div class="se-block">
+            <div class="se-heading">🏆 Klan Skytte & Dart</div>
+            <div class="se-formula">Summa av 4 spelares poäng ÷ 2</div>
+            <div class="se-note">Gäller både skytte och dart på klannivå.</div>
+          </div>
+
+          <div class="se-block">
+            <div class="se-heading">⛳ 2v2 Scramble</div>
+            <div class="se-formula">Vinst = 2 p &nbsp;|&nbsp; Oavgjort = 1 p &nbsp;|&nbsp; Förlust = 0 p</div>
+            <div class="se-note">Per runda (front 9 / back 9). Varje klan möter de andra 2 klanerna.</div>
+          </div>
+
+        </div>
+        <div class="se-total-row">
+          <strong>Klan totalt</strong> = Klan Golf + Klan Skytte + Klan Dart + 2v2 Scramble
         </div>
       </div>
     </main>

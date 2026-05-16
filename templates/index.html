@@ -1025,9 +1025,9 @@ function scrambleTeamHcp9(hcpA, hcpB, roundNum) {
 function scrambleRoundResult(scoreA, scoreB, hcpA, hcpB) {
   if (scoreA === null || scoreB === null) return { ptsA: null, ptsB: null };
   const netA = scoreA - (hcpA || 0), netB = scoreB - (hcpB || 0);
-  if (netA < netB) return { ptsA: 1.5, ptsB: 0 };
-  if (netA > netB) return { ptsA: 0, ptsB: 1.5 };
-  return { ptsA: 0.75, ptsB: 0.75 };
+  if (netA < netB) return { ptsA: 2, ptsB: 0 };
+  if (netA > netB) return { ptsA: 0, ptsB: 2 };
+  return { ptsA: 1, ptsB: 1 };
 }
 
 // ══════════════════════════════════════════════

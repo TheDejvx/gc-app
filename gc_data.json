@@ -6,12 +6,12 @@
   },
   "history": [
     {
-      "year": 2026,
       "course": {
         "name": "Eksjö GK",
         "par": 72,
         "slope_table": "eksjo_gk"
       },
+      "kgolf_formula": "scramble_plus_snitt",
       "klaner": [
         {
           "color": "#2e7d32",
@@ -215,8 +215,8 @@
           ]
         }
       ],
-      "kgolf_formula": "scramble_plus_snitt",
-      "locked": false
+      "locked": false,
+      "year": 2026
     },
     {
       "course": {
@@ -753,9 +753,172 @@
       ]
     },
     "mat": {
-      "frukost": [],
-      "lunch": [],
-      "middag": []
+      "frukost": [
+        {
+          "vara": "Ägg",
+          "antal": "100",
+          "klar": false
+        },
+        {
+          "vara": "Pågenlimpa (eller mot. bröd)",
+          "antal": "4",
+          "klar": false
+        },
+        {
+          "vara": "Yogurt",
+          "antal": "2 paket",
+          "klar": false
+        },
+        {
+          "vara": "Apelsinjuice 2L",
+          "antal": "10",
+          "klar": false
+        },
+        {
+          "vara": "Falukorv",
+          "antal": "2",
+          "klar": false
+        },
+        {
+          "vara": "Kaffe",
+          "antal": "3 paket",
+          "klar": false
+        },
+        {
+          "vara": "Resorb",
+          "antal": "10 rör",
+          "klar": false
+        },
+        {
+          "vara": "Skinka",
+          "antal": "1 paket",
+          "klar": false
+        },
+        {
+          "vara": "Pepparsalami",
+          "antal": "1 paket",
+          "klar": false
+        }
+      ],
+      "lunch": [
+        {
+          "vara": "Potatis",
+          "antal": "",
+          "klar": false
+        }
+      ],
+      "middag": [
+        {
+          "vara": "Hamburgare frysta",
+          "antal": "32",
+          "klar": false
+        },
+        {
+          "vara": "Hamburgerbröd",
+          "antal": "24",
+          "klar": false
+        },
+        {
+          "vara": "Cheddar ost",
+          "antal": "3 paket",
+          "klar": false
+        },
+        {
+          "vara": "Tomater",
+          "antal": "6",
+          "klar": false
+        },
+        {
+          "vara": "Gula lökar",
+          "antal": "4",
+          "klar": false
+        },
+        {
+          "vara": "Jalapenos i burk",
+          "antal": "",
+          "klar": false
+        },
+        {
+          "vara": "Ketchup",
+          "antal": "",
+          "klar": false
+        },
+        {
+          "vara": "Senap",
+          "antal": "",
+          "klar": false
+        },
+        {
+          "vara": "Hamburgerdressing",
+          "antal": "",
+          "klar": false
+        },
+        {
+          "vara": "Hotsauce",
+          "antal": "",
+          "klar": false
+        },
+        {
+          "vara": "Köttfärs",
+          "antal": "3 kg",
+          "klar": false
+        },
+        {
+          "vara": "Spagetti",
+          "antal": "3 paket",
+          "klar": false
+        },
+        {
+          "vara": "Gula lökar",
+          "antal": "6",
+          "klar": false
+        },
+        {
+          "vara": "Vitlök",
+          "antal": "2",
+          "klar": false
+        },
+        {
+          "vara": "Tomatpuré",
+          "antal": "1",
+          "klar": false
+        },
+        {
+          "vara": "Krossade tomater",
+          "antal": "5 paket",
+          "klar": false
+        },
+        {
+          "vara": "Matolja",
+          "antal": "1",
+          "klar": false
+        },
+        {
+          "vara": "Basilika färsk",
+          "antal": "",
+          "klar": false
+        },
+        {
+          "vara": "Oregano",
+          "antal": "",
+          "klar": false
+        },
+        {
+          "vara": "Paprikapulver",
+          "antal": "",
+          "klar": false
+        },
+        {
+          "vara": "Färdigriven parmesan",
+          "antal": "",
+          "klar": false
+        }
+      ]
+    },
+    "ansvarig": {
+      "frukost": null,
+      "lunch": null,
+      "middag": null
     }
   },
   "scramble_course": "nassjo_gk",
@@ -831,5 +994,8 @@
       ]
     }
   ],
-  "year": 2027
+  "year": 2027,
+  "_frukost_seeded": true,
+  "_lunch_potatis": true,
+  "_middag_bolognese": true
 }

@@ -835,6 +835,20 @@
     .mat-vara { flex: 1; }
     .mat-antal { width: 80px; }
     .mat-vara.klar { text-decoration: line-through; color: #bbb; }
+    /* ── Login modal ── */
+    #login-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:2000; align-items:center; justify-content:center; }
+    #login-modal-overlay.visible { display:flex; }
+    #login-modal { background:white; border-radius:16px; padding:32px 28px; width:320px; max-width:90vw; box-shadow:0 8px 32px rgba(0,0,0,0.25); }
+    #login-modal h2 { margin:0 0 8px; font-size:20px; color:#1a2e1a; }
+    #login-modal p { margin:0 0 16px; font-size:13px; color:#666; }
+    #login-pw { width:100%; box-sizing:border-box; padding:10px 12px; font-size:15px; border:2px solid #ddd; border-radius:8px; margin-bottom:10px; font-family:inherit; }
+    #login-pw:focus { outline:none; border-color:#2e7d32; }
+    #login-error { color:#c62828; font-size:12px; margin-bottom:10px; display:none; }
+    #login-submit { width:100%; padding:11px; background:#2e7d32; color:white; border:none; border-radius:8px; font-size:15px; font-weight:700; cursor:pointer; }
+    #login-submit:hover { background:#1b5e20; }
+    #login-cancel { width:100%; padding:8px; background:transparent; border:none; font-size:13px; color:#888; cursor:pointer; margin-top:6px; }
+    #login-btn { background:transparent; border:1.5px solid rgba(255,255,255,0.35); color:white; padding:8px 12px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; flex-shrink:0; transition:background 0.2s; }
+    #login-btn:hover { background:rgba(255,255,255,0.12); }
     .matsedel { display: flex; flex-direction: column; gap: 14px; }
     .matsedel-day { background: #f9f9f7; border-radius: 10px; padding: 14px 18px; border-left: 4px solid #c9a84c; }
     .matsedel-day-name { font-weight: 800; font-size: 15px; color: #2e7d32; margin-bottom: 8px; letter-spacing: 0.3px; }
@@ -877,6 +891,7 @@
   <div class="spacer"></div>
   <span id="db-status" title="Databasstatus" style="font-size:11px;opacity:0.7;flex-shrink:0"></span>
   <span id="save-status"></span>
+  <button id="login-btn" onclick="isLoggedIn() ? logout() : showLoginModal()">🔒 Logga in</button>
   <button id="new-year-btn" onclick="newYear()" title="Lägg till nytt år">+ Nytt år</button>
   <button id="lock-btn" onclick="toggleLock()" title="Lås/lås upp år">🔓</button>
   <button id="save-btn">Spara</button>
@@ -978,6 +993,17 @@
 
 <div class="toast" id="toast"></div>
 
+<div id="login-modal-overlay">
+  <div id="login-modal">
+    <h2>🔒 Logga in</h2>
+    <p>Ange lösenord för att redigera</p>
+    <div id="login-error">Fel lösenord, försök igen</div>
+    <input type="password" id="login-pw" placeholder="Lösenord" autocomplete="current-password">
+    <button id="login-submit">Logga in</button>
+    <button id="login-cancel">Avbryt</button>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════════════════
 //  COURSE CONSTANTS
@@ -1038,6 +1064,44 @@ let unsaved = false;
 let _autoSaveTimer = null;
 let activeTab = 'current';
 let activeSubTab = 'oversikt';
+
+// ── Auth ──
+const _SESSION_KEY = 'gc_auth';
+const _SESSION_MS  = 12 * 60 * 60 * 1000;
+
+function isLoggedIn() {
+  try { const s = JSON.parse(localStorage.getItem(_SESSION_KEY)); return s && s.exp > Date.now(); }
+  catch { return false; }
+}
+function login(pw) {
+  if (pw !== 'storsnopp1') return false;
+  localStorage.setItem(_SESSION_KEY, JSON.stringify({ exp: Date.now() + _SESSION_MS }));
+  updateLoginUI(); return true;
+}
+function logout() {
+  if (!confirm('Logga ut?')) return;
+  localStorage.removeItem(_SESSION_KEY); updateLoginUI();
+}
+function updateLoginUI() {
+  const btn = document.getElementById('login-btn');
+  if (!btn) return;
+  if (isLoggedIn()) {
+    btn.textContent = '✓ Inloggad'; btn.title = 'Klicka för att logga ut';
+    btn.style.cssText += ';border-color:rgba(129,199,132,0.7);color:#a5d6a7;';
+  } else {
+    btn.textContent = '🔒 Logga in'; btn.title = '';
+    btn.style.cssText += ';border-color:rgba(255,255,255,0.35);color:white;';
+  }
+}
+function showLoginModal() {
+  document.getElementById('login-modal-overlay').classList.add('visible');
+  document.getElementById('login-pw').value = '';
+  document.getElementById('login-error').style.display = 'none';
+  setTimeout(() => document.getElementById('login-pw').focus(), 50);
+}
+function hideLoginModal() {
+  document.getElementById('login-modal-overlay').classList.remove('visible');
+}
 
 // ══════════════════════════════════════════════
 //  PARSING  (handle both , and . as decimal)
@@ -2646,6 +2710,7 @@ function onKlanSlag(ki, el) {
 }
 
 function markUnsaved() {
+  if (!isLoggedIn() && activeSubTab !== 'mat') { showLoginModal(); return; }
   unsaved = true;
   document.getElementById('save-status').textContent = '● Osparade ändringar';
   clearTimeout(_autoSaveTimer);
@@ -2881,6 +2946,7 @@ async function loadData() {
 }
 
 async function saveData() {
+  if (!isLoggedIn()) { showLoginModal(); return; }
   clearTimeout(_autoSaveTimer);
   const btn = document.getElementById('save-btn');
   btn.disabled = true;
@@ -2934,6 +3000,22 @@ document.getElementById('course-par-input').addEventListener('input', e => {
 });
 
 document.getElementById('save-btn').addEventListener('click', saveData);
+
+document.getElementById('login-submit').addEventListener('click', () => {
+  if (login(document.getElementById('login-pw').value)) {
+    hideLoginModal(); showToast('✓ Inloggad i 12 timmar');
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+});
+document.getElementById('login-pw').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('login-submit').click();
+});
+document.getElementById('login-cancel').addEventListener('click', hideLoginModal);
+document.getElementById('login-modal-overlay').addEventListener('click', e => {
+  if (e.target.id === 'login-modal-overlay') hideLoginModal();
+});
+updateLoginUI();
 
 window.addEventListener('beforeunload', e => {
   if (unsaved) { e.preventDefault(); e.returnValue = ''; }

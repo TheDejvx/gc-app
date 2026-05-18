@@ -1373,7 +1373,7 @@ function buildSubTabs() {
     { id: 'golf',        label: '🏌️ Golf' },
     { id: 'scramble4',   label: '🏌️ 4-Man Scramble' },
     { id: 'skytte',      label: '🔫 Skytte' },
-    { id: 'dart',        label: '🎯 Dart' },
+    { id: 'dart',        label: '🎯 Startordning Dart' },
     { id: 'scramble',    label: '⛳ 2v2 Scramble' },
     { id: 'mat',         label: '🍽️ Mat och Dryck' },
   ];
@@ -2075,40 +2075,55 @@ function renderSkytteTab(d) {
 function renderDartTab(d) {
   const el = document.getElementById('sub-view-dart');
   if (!el) return;
+
+  // Collect all players, sort by current total GC score ASCENDING (worst first = starts first)
+  const allPlayers = [];
+  d.klaner.forEach((klan, ki) => klan.spelare.forEach((p, pi) => {
+    allPlayers.push({ ...p, klanColor: klan.color, ki, pi });
+  }));
+  const withTot    = allPlayers.filter(p => p._tot !== null).sort((a, b) => a._tot - b._tot);
+  const withoutTot = allPlayers.filter(p => p._tot === null);
+  const ordered    = [...withTot, ...withoutTot];
+  const n          = ordered.length;
+
+  const rows = ordered.map((p, i) => {
+    const val = state.klaner[p.ki].spelare[p.pi].dart ?? '';
+    const hasScore = val !== '' && val !== null;
+    // Gold/silver/bronze go to the LAST positions (best GC score = best starting slot)
+    const revI = n - 1 - i;
+    const posColor = revI === 0 ? '#f9a825' : revI === 1 ? '#90a4ae' : revI === 2 ? '#a1887f' : '#bbb';
+    return `<tr>
+      <td class="runda-pos" style="color:${posColor}">${i + 1}</td>
+      <td class="stt-name"><span class="klan-dot" style="background:${p.klanColor}"></span>${p.namn}</td>
+      <td style="font-size:11px;color:#aaa;text-align:center">${p._tot !== null ? fmtN(p._tot) + ' pts' : '–'}</td>
+      <td><input class="tab-input${hasScore ? ' filled' : ''}"
+        type="text" inputmode="numeric"
+        id="dt-dart-${p.ki}-${p.pi}"
+        value="${val}"
+        placeholder="0–50"
+        oninput="onInput(${p.ki},${p.pi},'dart',this)"></td>
+      <td class="stt-calc green">${p._dpts !== null ? fmtN(p._dpts) : '–'}</td>
+    </tr>`;
+  }).join('');
+
   withFocus(() => {
     el.innerHTML = `
       <main>
-        <div class="klaner-grid">
-          ${d.klaner.map((klan, ki) => `
-            <div class="klan-card">
-              <div class="klan-header" style="background:${klan.color}">
-                <h2>${klan.name}</h2>
-                <div class="klan-badge-total">
-                  <div class="tot-num">${klan._kdart !== null ? fmtN(klan._kdart) : '–'}</div>
-                  <div class="tot-label">dart total</div>
-                </div>
-              </div>
-              <div style="padding:14px 16px">
-                <table class="sport-tab-table">
-                  <thead><tr>
-                    <th class="left">Spelare</th>
-                    <th>Totala poäng (0–50)</th>
-                    <th class="green">Dart pts</th>
-                  </tr></thead>
-                  <tbody>
-                    ${klan.spelare.map((p, pi) => `
-                      <tr>
-                        <td class="stt-name">${p.namn}</td>
-                        <td><input class="tab-input${state.klaner[ki].spelare[pi].dart !== null ? ' filled' : ''}" type="text" inputmode="numeric"
-                          id="dt-dart-${ki}-${pi}"
-                          value="${state.klaner[ki].spelare[pi].dart ?? ''}"
-                          placeholder="0–50" oninput="onInput(${ki},${pi},'dart',this)"></td>
-                        <td class="stt-calc green">${p._dpts !== null ? fmtN(p._dpts) : '–'}</td>
-                      </tr>`).join('')}
-                  </tbody>
-                </table>
-              </div>
-            </div>`).join('')}
+        <div class="runda-card">
+          <div class="runda-header">
+            <span class="runda-label">Startordning Dart</span>
+            <span class="runda-total">Sämst placerad i GC startar först</span>
+          </div>
+          <table class="sport-tab-table">
+            <thead><tr>
+              <th class="runda-pos-th">#</th>
+              <th class="left">Spelare</th>
+              <th>GC Totalt</th>
+              <th>Poäng (0–50)</th>
+              <th class="green">Dart pts</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
         </div>
         ${sportLeaderboardHtml(d, 'dart')}
       </main>`;
